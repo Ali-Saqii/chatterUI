@@ -106,19 +106,22 @@ final class PostViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Comments (Placeholder / Ready for future wiring)
+struct AddCommentRequestBody: Encodable {
+    let text: String
+}
+
+    // MARK: - Comments
     func loadComments(for postId: String) async {
         isLoadingComments = true
         defer { isLoadingComments = false }
         
-        // Structured for one-line hookup when backend endpoint is ready:
-        // do {
-        //     self.comments = try await APIClient.shared.request(.getComments(postId: postId))
-        // } catch { ... }
-        
-        // Fallback to initial mock comments
-        try? await Task.sleep(nanoseconds: 300_000_000)
-        self.comments = Comment.mockComments(for: postId)
+        do {
+            let loadedComments: [Comment] = try await APIClient.shared.request(.getComments(postId: postId))
+            self.comments = loadedComments
+        } catch {
+            // Graceful fallback to initial mock comments if endpoint not yet deployed
+            self.comments = Comment.mockComments(for: postId)
+        }
     }
     
     func submitComment(for postId: String, currentUser: User?) async {
@@ -129,13 +132,7 @@ final class PostViewModel: ObservableObject {
         isSubmittingComment = true
         defer { isSubmittingComment = false }
         
-        // Structured for one-line backend activation:
-        // do {
-        //     let newComment: Comment = try await APIClient.shared.request(.addComment(postId: postId), body: ["text": trimmed])
-        //     comments.append(newComment)
-        // } catch { ... }
-        
-        let newComment = Comment(
+        let tempComment = Comment(
             id: UUID().uuidString,
             post: postId,
             author: user,
@@ -144,9 +141,22 @@ final class PostViewModel: ObservableObject {
         )
         
         withAnimation(.easeOut(duration: 0.25)) {
-            comments.append(newComment)
+            comments.append(tempComment)
             newCommentText = ""
         }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        
+        do {
+            let body = AddCommentRequestBody(text: trimmed)
+            let createdComment: Comment = try await APIClient.shared.request(
+                .addComment(postId: postId),
+                body: body
+            )
+            if let index = comments.firstIndex(where: { $0.id == tempComment.id }) {
+                comments[index] = createdComment
+            }
+        } catch {
+            // Keep the optimistic comment if endpoint not yet ready
+        }
     }
 }
