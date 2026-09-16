@@ -10,6 +10,7 @@ struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
     @EnvironmentObject private var appState: AppState
     @State private var viewMode: Int = 0 // 0: Grid, 1: Feed
+    @State private var selectedPostForDetail: Post? = nil
     
     init(username: String? = nil) {
         self.username = username
@@ -112,15 +113,30 @@ struct ProfileView: View {
                         )
                     } else {
                         if viewMode == 0 {
-                            PostGridView(posts: viewModel.posts)
-                                .padding(.horizontal, 2)
+                            PostGridView(posts: viewModel.posts) { post in
+                                selectedPostForDetail = post
+                            }
+                            .padding(.horizontal, 2)
                         } else {
                             LazyVStack(spacing: 16) {
                                 ForEach(viewModel.posts) { post in
-                                    NavigationLink(destination: PostDetailView(post: post)) {
-                                        PostRowView(post: post)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                    PostRowView(
+                                        post: post,
+                                        onPostTapped: {
+                                            selectedPostForDetail = post
+                                        },
+                                        onLikeTapped: {
+                                            viewModel.toggleLike(for: post)
+                                        },
+                                        onDeleteTapped: {
+                                            Task {
+                                                await viewModel.deletePost(postId: post.id)
+                                            }
+                                        },
+                                        onCommentTapped: {
+                                            selectedPostForDetail = post
+                                        }
+                                    )
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -133,6 +149,17 @@ struct ProfileView: View {
         .background(Color.chatterBackground.ignoresSafeArea())
         .navigationTitle(username != nil ? "@\(username!)" : "Profile")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: Binding(
+            get: { selectedPostForDetail != nil },
+            set: { if !$0 { selectedPostForDetail = nil } }
+        )) {
+            if let post = selectedPostForDetail {
+                PostDetailView(post: post) { updated in
+                    viewModel.updatePost(updated)
+                    selectedPostForDetail = updated
+                }
+            }
+        }
         .refreshable {
             await viewModel.loadProfile(currentUser: appState.currentUser)
         }

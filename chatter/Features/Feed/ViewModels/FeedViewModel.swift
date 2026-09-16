@@ -118,4 +118,10 @@ final class FeedViewModel: ObservableObject {
             }
         }
     }
+    
+    func updatePost(_ updatedPost: Post) {
+        if let index = posts.firstIndex(where: { $0.id == updatedPost.id }) {
+            posts[index] = updatedPost
+        }
+    }
 }

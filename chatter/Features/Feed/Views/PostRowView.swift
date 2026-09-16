@@ -7,6 +7,7 @@ import SwiftUI
 
 struct PostRowView: View {
     let post: Post
+    var onPostTapped: (() -> Void)? = nil
     var onLikeTapped: (() -> Void)? = nil
     var onDeleteTapped: (() -> Void)? = nil
     var onCommentTapped: (() -> Void)? = nil
@@ -78,11 +79,19 @@ struct PostRowView: View {
                     .foregroundColor(.chatterText)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        onPostTapped?()
+                    }
             }
             
             // Media Preview
             if post.mediaType != .none, let _ = post.mediaURL {
                 MediaPlayerView(mediaURL: post.mediaURL, mediaType: post.mediaType)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        onPostTapped?()
+                    }
             }
             
             // Post Actions Bar
@@ -107,7 +116,11 @@ struct PostRowView: View {
                 
                 // Comment Button
                 Button(action: {
-                    onCommentTapped?()
+                    if let onCommentTapped = onCommentTapped {
+                        onCommentTapped()
+                    } else {
+                        onPostTapped?()
+                    }
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "bubble.right")

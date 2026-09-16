@@ -8,6 +8,7 @@ import SwiftUI
 struct FeedView: View {
     @StateObject private var viewModel = FeedViewModel()
     @EnvironmentObject private var appState: AppState
+    @State private var selectedPostForDetail: Post? = nil
     
     var body: some View {
         ZStack {
@@ -39,21 +40,23 @@ struct FeedView: View {
                 ScrollView {
                     LazyVStack(spacing: 16) {
                         ForEach(viewModel.posts) { post in
-                            NavigationLink(destination: PostDetailView(post: post)) {
-                                PostRowView(
-                                    post: post,
-                                    onLikeTapped: {
-                                        viewModel.toggleLike(for: post)
-                                    },
-                                    onDeleteTapped: {
-                                        Task {
-                                            await viewModel.deletePost(postId: post.id)
-                                        }
-                                    },
-                                    onCommentTapped: nil
-                                )
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                            PostRowView(
+                                post: post,
+                                onPostTapped: {
+                                    selectedPostForDetail = post
+                                },
+                                onLikeTapped: {
+                                    viewModel.toggleLike(for: post)
+                                },
+                                onDeleteTapped: {
+                                    Task {
+                                        await viewModel.deletePost(postId: post.id)
+                                    }
+                                },
+                                onCommentTapped: {
+                                    selectedPostForDetail = post
+                                }
+                            )
                             .onAppear {
                                 Task {
                                     await viewModel.loadMoreIfNeeded(currentPost: post)
@@ -108,6 +111,17 @@ struct FeedView: View {
                     Task {
                         await viewModel.fetchFeed(isRefresh: true)
                     }
+                }
+            }
+        }
+        .navigationDestination(isPresented: Binding(
+            get: { selectedPostForDetail != nil },
+            set: { if !$0 { selectedPostForDetail = nil } }
+        )) {
+            if let post = selectedPostForDetail {
+                PostDetailView(post: post) { updated in
+                    viewModel.updatePost(updated)
+                    selectedPostForDetail = updated
                 }
             }
         }

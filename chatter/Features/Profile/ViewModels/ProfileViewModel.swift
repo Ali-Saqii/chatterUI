@@ -249,4 +249,40 @@ final class ProfileViewModel: ObservableObject {
             return false
         }
     }
+    
+    // MARK: - Post Actions
+    func updatePost(_ updatedPost: Post) {
+        if let index = posts.firstIndex(where: { $0.id == updatedPost.id }) {
+            posts[index] = updatedPost
+        }
+    }
+    
+    func toggleLike(for post: Post) {
+        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
+        var updated = posts[index]
+        updated.isLikedByMe.toggle()
+        updated.likesCount += updated.isLikedByMe ? 1 : -1
+        posts[index] = updated
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Task {
+            do {
+                let _: EmptyResponse = try await APIClient.shared.request(.toggleLike(postId: post.id))
+            } catch {}
+        }
+    }
+    
+    func deletePost(postId: String) async {
+        do {
+            let _: EmptyResponse = try await APIClient.shared.request(.deletePost(postId: postId))
+            withAnimation {
+                posts.removeAll { $0.id == postId }
+                if var u = user, u.postsCount > 0 {
+                    u.postsCount -= 1
+                    self.user = u
+                }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }

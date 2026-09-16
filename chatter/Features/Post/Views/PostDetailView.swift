@@ -7,6 +7,7 @@ import SwiftUI
 
 struct PostDetailView: View {
     @State var post: Post
+    var onPostUpdated: ((Post) -> Void)? = nil
     @StateObject private var viewModel = PostViewModel()
     @EnvironmentObject private var appState: AppState
     
@@ -20,6 +21,7 @@ struct PostDetailView: View {
                         onLikeTapped: {
                             post.isLikedByMe.toggle()
                             post.likesCount += post.isLikedByMe ? 1 : -1
+                            onPostUpdated?(post)
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             Task {
                                 do {
@@ -93,6 +95,7 @@ struct PostDetailView: View {
                         Task {
                             await viewModel.submitComment(for: post.id, currentUser: appState.currentUser)
                             post.commentsCount = viewModel.comments.count
+                            onPostUpdated?(post)
                         }
                     }) {
                         if viewModel.isSubmittingComment {
