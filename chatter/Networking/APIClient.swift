@@ -24,7 +24,10 @@ struct MultipartFile {
 final class APIClient {
     static let shared = APIClient()
     
-    var baseURL: String = "http://localhost:5000/api/"
+    var baseURL: String {
+        get { AppConfig.baseURL }
+        set { AppConfig.baseURL = newValue }
+    }
     
     private let session: URLSession
     private let decoder: JSONDecoder
@@ -52,18 +55,28 @@ final class APIClient {
                 return date
             }
             
-            // Fallback to standard formatter
+            // Fallback to standard formatter formats
+            let formats = [
+                "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "yyyy-MM-dd'T'HH:mm:ssZ",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd HH:mm:ss"
+            ]
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-            if let date = formatter.date(from: dateString) {
-                return date
-            }
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            if let date = formatter.date(from: dateString) {
-                return date
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            
+            for fmt in formats {
+                formatter.dateFormat = fmt
+                if let date = formatter.date(from: dateString) {
+                    return date
+                }
             }
             
+            #if DEBUG
+            print("[APIClient] Warning: Could not decode date string: \(dateString)")
+            #endif
             return Date()
         }
     }
