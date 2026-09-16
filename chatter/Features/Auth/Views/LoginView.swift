@@ -157,3 +157,11 @@ struct LoginView: View {
         }
     }
 }
+
+#Preview("Login Screen") {
+    NavigationStack {
+        LoginView(viewModel: AuthViewModel())
+            .environmentObject(AppState())
+    }
+}
+

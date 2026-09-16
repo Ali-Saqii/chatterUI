@@ -65,3 +65,6 @@ struct FriendsListView: View {
         }
     }
 }
+#Preview {
+    FriendsListView(viewModel: PeopleViewModel())
+}

@@ -90,3 +90,16 @@ struct AvatarView: View {
         }
     }
 }
+
+#Preview("Avatar Variations") {
+    VStack(spacing: 20) {
+        HStack(spacing: 16) {
+            AvatarView(urlString: nil, name: "Sarah Connor", size: 36)
+            AvatarView(urlString: nil, name: "Alex Rivera", size: 48)
+            AvatarView(urlString: nil, name: "Sophia Chen", size: 64, showBorder: true)
+            AvatarView(urlString: "https://images.unsplash.com/photo-1534528741775-53994a69daeb", name: "Elena Rostova", size: 80, showBorder: true, borderColor: .chatterSecondary)
+        }
+    }
+    .padding()
+}
+

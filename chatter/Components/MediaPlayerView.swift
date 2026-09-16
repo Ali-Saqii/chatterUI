@@ -139,3 +139,14 @@ struct FullScreenImageView: View {
         }
     }
 }
+
+#Preview("Media Player") {
+    VStack(spacing: 16) {
+        MediaPlayerView(
+            mediaURL: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+            mediaType: .image
+        )
+    }
+    .padding()
+}
+

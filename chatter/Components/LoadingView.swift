@@ -99,3 +99,18 @@ struct LoadingView: View {
         .background(Color.chatterBackground.opacity(0.7))
     }
 }
+
+#Preview("Loading Skeletons") {
+    ScrollView {
+        VStack(spacing: 16) {
+            PostSkeletonView()
+            UserSkeletonView()
+        }
+        .padding()
+    }
+}
+
+#Preview("Loading Spinner") {
+    LoadingView(message: "Connecting to Chatter...")
+}
+

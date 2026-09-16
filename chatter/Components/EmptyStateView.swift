@@ -55,3 +55,13 @@ struct EmptyStateView: View {
         .frame(maxWidth: .infinity)
     }
 }
+
+#Preview("Empty State") {
+    EmptyStateView(
+        icon: "bubble.left.and.exclamationmark.bubble.right",
+        title: "No Posts Yet",
+        description: "Be the first to share something with the world!",
+        buttonTitle: "Create Post"
+    ) {}
+}
+

@@ -149,3 +149,25 @@ enum FriendActionState: Equatable {
     case editProfile
     case loading
 }
+
+extension User {
+    static let mock = User(
+        id: "mock_user_1",
+        fullName: "Sarah Connor",
+        username: "sarahc",
+        email: "sarah@example.com",
+        bio: "Designing the future of social technology 🚀 | Coffee & Swift enthusiast",
+        avatarURL: nil,
+        postsCount: 24,
+        friendsCount: 142,
+        createdAt: Date()
+    )
+    
+    static let mockList: [User] = [
+        User(id: "u1", fullName: "Sarah Connor", username: "sarahc", bio: "Tech & Design", postsCount: 12, friendsCount: 54),
+        User(id: "u2", fullName: "Alex Rivera", username: "arivera", bio: "Photographer & Developer", postsCount: 30, friendsCount: 89),
+        User(id: "u3", fullName: "Sophia Chen", username: "sophia_c", bio: "SwiftUI explorer", postsCount: 18, friendsCount: 110),
+        User(id: "u4", fullName: "Liam Davies", username: "liamd", bio: "Music lover & sound designer", postsCount: 7, friendsCount: 42)
+    ]
+}
+

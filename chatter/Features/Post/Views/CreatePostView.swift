@@ -183,3 +183,7 @@ struct CreatePostView: View {
         }
     }
 }
+#Preview {
+    CreatePostView (onPostCreated: {})
+        .environmentObject(AppState())
+}

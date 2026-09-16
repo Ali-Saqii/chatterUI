@@ -75,3 +75,13 @@ struct ErrorBanner: View {
         .transition(.move(edge: .top).combined(with: .opacity))
     }
 }
+
+#Preview("Banners") {
+    VStack(spacing: 16) {
+        ErrorBanner(banner: BannerData(message: "Failed to load posts. Please check connection.", type: .error)) {}
+        ErrorBanner(banner: BannerData(message: "Profile updated successfully!", type: .success)) {}
+        ErrorBanner(banner: BannerData(message: "Logged out successfully.", type: .info)) {}
+    }
+    .padding(.vertical)
+}
+

@@ -173,3 +173,7 @@ struct PeopleView: View {
         }
     }
 }
+#Preview {
+    PeopleView()
+        .environmentObject(AppState())
+}

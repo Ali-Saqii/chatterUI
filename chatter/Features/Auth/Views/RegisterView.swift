@@ -181,3 +181,11 @@ struct RegisterView: View {
         }
     }
 }
+
+#Preview("Register Screen") {
+    NavigationStack {
+        RegisterView(viewModel: AuthViewModel())
+            .environmentObject(AppState())
+    }
+}
+

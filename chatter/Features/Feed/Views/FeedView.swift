@@ -118,3 +118,9 @@ struct FeedView: View {
         }
     }
 }
+
+#Preview {
+    FeedView()
+        .environmentObject(AppState())
+
+}

@@ -98,3 +98,15 @@ struct ScaleButtonStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
+
+#Preview("Button Styles") {
+    VStack(spacing: 16) {
+        PrimaryButton(title: "Log In", icon: "arrow.right") {}
+        PrimaryButton(title: "Loading State", isLoading: true) {}
+        PrimaryButton(title: "Secondary Action", icon: "pencil", style: .secondary) {}
+        PrimaryButton(title: "Delete Account", icon: "trash", style: .destructive) {}
+        PrimaryButton(title: "Outline Button", style: .outline) {}
+    }
+    .padding()
+}
+

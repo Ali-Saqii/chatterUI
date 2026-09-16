@@ -244,3 +244,7 @@ struct ProfileView: View {
         }
     }
 }
+#Preview {
+    ProfileView(username: "hassan")
+        .environmentObject(AppState())
+}

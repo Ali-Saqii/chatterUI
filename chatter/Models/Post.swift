@@ -123,3 +123,55 @@ struct PaginatedPostsResponse: Codable {
         self.pagination = pagination
     }
 }
+
+extension Post {
+    static let mock = Post(
+        id: "mock_post_1",
+        author: User.mock,
+        text: "Just shipped the complete SwiftUI frontend for Chatter! Sleek dark/light mode, custom animations, and clean MVVM architecture 📱🚀",
+        mediaURL: nil,
+        mediaPublicId: nil,
+        mediaType: .none,
+        likesCount: 38,
+        commentsCount: 9,
+        createdAt: Date().addingTimeInterval(-1800),
+        isLikedByMe: false
+    )
+    
+    static let mockList: [Post] = [
+        Post(
+            id: "p1",
+            author: User.mock,
+            text: "Excited to launch our new social media platform! Join the conversation and connect with creators worldwide.",
+            mediaURL: nil,
+            mediaType: .none,
+            likesCount: 52,
+            commentsCount: 14,
+            createdAt: Date().addingTimeInterval(-3600),
+            isLikedByMe: true
+        ),
+        Post(
+            id: "p2",
+            author: User.mockList[1],
+            text: "Golden hour in the mountains today. Nothing beats nature's lighting.",
+            mediaURL: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+            mediaType: .image,
+            likesCount: 128,
+            commentsCount: 23,
+            createdAt: Date().addingTimeInterval(-7200),
+            isLikedByMe: false
+        ),
+        Post(
+            id: "p3",
+            author: User.mockList[2],
+            text: "Working on some exciting new SwiftUI view modifiers and animations. The canvas previews make iterating so fast!",
+            mediaURL: nil,
+            mediaType: .none,
+            likesCount: 41,
+            commentsCount: 6,
+            createdAt: Date().addingTimeInterval(-14400),
+            isLikedByMe: false
+        )
+    ]
+}
+
