@@ -48,7 +48,7 @@ struct EditProfileView: View {
                             .offset(x: 2, y: 2)
                         }
                     }
-                    .onChange(of: viewModel.selectedAvatarItem) { newItem in
+                    .onChange(of: viewModel.selectedAvatarItem) { _, newItem in
                         Task {
                             await viewModel.handleAvatarSelection(newItem)
                         }

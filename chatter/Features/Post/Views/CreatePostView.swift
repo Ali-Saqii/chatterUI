@@ -122,7 +122,7 @@ struct CreatePostView: View {
                         .background(Color.chatterPrimary.opacity(0.1))
                         .clipShape(Capsule())
                     }
-                    .onChange(of: viewModel.selectedPhotoItem) { newItem in
+                    .onChange(of: viewModel.selectedPhotoItem) { _, newItem in
                         Task {
                             await viewModel.handlePhotoSelection(newItem)
                         }

@@ -151,7 +151,7 @@ struct LoginView: View {
             }
         }
         .background(Color.chatterBackground.ignoresSafeArea())
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             viewModel.clearErrors()
         }

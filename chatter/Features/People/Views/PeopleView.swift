@@ -41,9 +41,14 @@ struct PeopleView: View {
         .navigationTitle("People")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await viewModel.searchUsers()
             await viewModel.fetchFriends()
             await viewModel.fetchRequests()
+        }
+        .task(id: viewModel.searchQuery) {
+            if !viewModel.searchQuery.isEmpty {
+                try? await Task.sleep(nanoseconds: 350_000_000)
+            }
+            await viewModel.searchUsers()
         }
     }
     

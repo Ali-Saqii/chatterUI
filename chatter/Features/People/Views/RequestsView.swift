@@ -69,7 +69,6 @@ struct RequestsView: View {
                                             }
                                         }
                                     }
-                                    .padding(.horizontal, 16)
                                 }
                             }
                         }
@@ -101,11 +100,11 @@ struct RequestsView: View {
                                                 .clipShape(Capsule())
                                         }
                                     }
-                                    .padding(.horizontal, 16)
                                 }
                             }
                         }
                     }
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                 }
             }
