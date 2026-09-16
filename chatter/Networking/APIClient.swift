@@ -187,15 +187,7 @@ final class APIClient {
             
             throw APIError.emptyData
         } else {
-            // Handle error status code
-            if httpResponse.statusCode == 401 {
-                throw APIError.unauthorized
-            } else if httpResponse.statusCode == 403 {
-                throw APIError.forbidden
-            } else if httpResponse.statusCode == 404 {
-                throw APIError.notFound
-            }
-            
+            // Check for server error message in envelope or JSON response first
             if let envelope = envelope {
                 if let errors = envelope.errors, !errors.isEmpty {
                     throw APIError.serverError(errors.joined(separator: ", "))
@@ -205,9 +197,23 @@ final class APIClient {
             }
             
             // Fallback error from raw JSON message if possible
-            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let message = errorJson["message"] as? String {
-                throw APIError.serverError(message)
+            if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let message = errorJson["message"] as? String, !message.isEmpty {
+                    throw APIError.serverError(message)
+                } else if let errorMsg = errorJson["error"] as? String, !errorMsg.isEmpty {
+                    throw APIError.serverError(errorMsg)
+                } else if let errorsArr = errorJson["errors"] as? [String], !errorsArr.isEmpty {
+                    throw APIError.serverError(errorsArr.joined(separator: ", "))
+                }
+            }
+            
+            // If no custom message from server, fallback to standard status code errors
+            if httpResponse.statusCode == 401 {
+                throw APIError.unauthorized
+            } else if httpResponse.statusCode == 403 {
+                throw APIError.forbidden
+            } else if httpResponse.statusCode == 404 {
+                throw APIError.notFound
             }
             
             throw APIError.serverError("Server returned status \(httpResponse.statusCode)")
