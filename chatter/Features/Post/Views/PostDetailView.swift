@@ -119,3 +119,10 @@ struct PostDetailView: View {
         }
     }
 }
+
+#Preview("Post Detail") {
+    NavigationStack {
+        PostDetailView(post: Post.mock)
+            .environmentObject(AppState())
+    }
+}

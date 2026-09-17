@@ -149,3 +149,15 @@ struct PostRowView: View {
     }
 }
 
+#Preview("Post Row Variations") {
+    ScrollView {
+        VStack(spacing: 16) {
+            PostRowView(post: Post.mock)
+            PostRowView(post: Post.mockList[1])
+            PostRowView(post: Post.mockList[2])
+        }
+        .padding()
+    }
+    .background(Color.chatterBackground)
+}
+

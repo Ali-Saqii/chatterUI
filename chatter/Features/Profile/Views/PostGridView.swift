@@ -61,3 +61,10 @@ struct PostGridView: View {
         .contentShape(Rectangle())
     }
 }
+
+#Preview("Post Grid") {
+    ScrollView {
+        PostGridView(posts: Post.mockList)
+    }
+    .background(Color.chatterBackground)
+}

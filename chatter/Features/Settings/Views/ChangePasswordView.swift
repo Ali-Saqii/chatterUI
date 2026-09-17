@@ -158,4 +158,11 @@ struct ChangePasswordView: View {
     }
 }
 
+#Preview("Change Password") {
+    NavigationStack {
+        ChangePasswordView(viewModel: SettingsViewModel())
+            .environmentObject(AppState())
+    }
+}
+
 

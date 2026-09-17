@@ -65,6 +65,11 @@ struct FriendsListView: View {
         }
     }
 }
-#Preview {
-    FriendsListView(viewModel: PeopleViewModel())
+#Preview("Friends List") {
+    let vm = PeopleViewModel()
+    vm.friends = User.mockList
+    return NavigationStack {
+        FriendsListView(viewModel: vm)
+            .background(Color.chatterBackground)
+    }
 }

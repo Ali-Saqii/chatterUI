@@ -183,7 +183,11 @@ struct CreatePostView: View {
         }
     }
 }
-#Preview {
-    CreatePostView (onPostCreated: {})
-        .environmentObject(AppState())
+#Preview("Create Post") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        CreatePostView(onPostCreated: {})
+            .environmentObject(state)
+    }
 }

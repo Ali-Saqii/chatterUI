@@ -6,7 +6,7 @@
 import Foundation
 
 enum AppConfig {
-    static let defaultBaseURL = "http://localhost:5000/api/"
+    static let defaultBaseURL = "http://localhost:5001/api/"
     
     private static let baseURLOverrideKey = "com.chatter.baseURLOverride"
     

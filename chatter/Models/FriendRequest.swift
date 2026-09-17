@@ -74,6 +74,37 @@ struct FriendRequest: Identifiable, Codable, Equatable, Hashable, Sendable {
         try container.encode(status.rawValue, forKey: .status)
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
     }
+    static let mock = FriendRequest(
+        id: "mock_req_1",
+        sender: User.mockList[1],
+        receiver: User.mock,
+        status: .pending,
+        createdAt: Date()
+    )
+    
+    static let mockList: [FriendRequest] = [
+        FriendRequest(
+            id: "mock_req_1",
+            sender: User.mockList[1],
+            receiver: User.mock,
+            status: .pending,
+            createdAt: Date()
+        ),
+        FriendRequest(
+            id: "mock_req_2",
+            sender: User.mockList[2],
+            receiver: User.mock,
+            status: .pending,
+            createdAt: Date().addingTimeInterval(-3600)
+        ),
+        FriendRequest(
+            id: "mock_req_3",
+            sender: User.mock,
+            receiver: User.mockList[3],
+            status: .pending,
+            createdAt: Date().addingTimeInterval(-7200)
+        )
+    ]
 }
 
 struct PaginatedRequestsResponse: Codable {

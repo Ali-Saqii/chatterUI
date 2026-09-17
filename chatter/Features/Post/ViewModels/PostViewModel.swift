@@ -5,6 +5,7 @@
 
 import SwiftUI
 import PhotosUI
+import Combine
 
 private struct AddCommentRequestBody: Encodable {
     let text: String

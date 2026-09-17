@@ -271,7 +271,20 @@ struct ProfileView: View {
         }
     }
 }
-#Preview {
-    ProfileView(username: "hassan")
-        .environmentObject(AppState())
+#Preview("My Profile") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        ProfileView(username: nil)
+            .environmentObject(state)
+    }
+}
+
+#Preview("Other User Profile") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        ProfileView(username: "janedoe")
+            .environmentObject(state)
+    }
 }

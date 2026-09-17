@@ -58,3 +58,23 @@ extension UserRowView where ActionContent == EmptyView {
         self.init(user: user, actionView: { EmptyView() })
     }
 }
+
+#Preview("User Row Variations") {
+    VStack(spacing: 12) {
+        UserRowView(user: User.mock)
+        
+        UserRowView(user: User.mockList[1]) {
+            Button(action: {}) {
+                Text("Add")
+                    .font(.chatterCaptionBold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+                    .background(Color.chatterGradient)
+                    .clipShape(Capsule())
+            }
+        }
+    }
+    .padding()
+    .background(Color.chatterBackground)
+}

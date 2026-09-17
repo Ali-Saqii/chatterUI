@@ -5,6 +5,7 @@
 
 import SwiftUI
 import PhotosUI
+import Combine
 
 @MainActor
 final class ProfileViewModel: ObservableObject {

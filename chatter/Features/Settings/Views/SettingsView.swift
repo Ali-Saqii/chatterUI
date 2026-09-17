@@ -166,7 +166,11 @@ struct SettingsView: View {
         }
     }
 }
-#Preview {
-    SettingsView()
-        .environmentObject(AppState())
+#Preview("Settings Screen") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        SettingsView()
+            .environmentObject(state)
+    }
 }

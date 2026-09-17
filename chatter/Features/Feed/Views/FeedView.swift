@@ -133,8 +133,11 @@ struct FeedView: View {
     }
 }
 
-#Preview {
-    FeedView()
-        .environmentObject(AppState())
-
+#Preview("Feed Screen") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        FeedView()
+            .environmentObject(state)
+    }
 }

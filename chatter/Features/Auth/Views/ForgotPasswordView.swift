@@ -119,3 +119,18 @@ struct ForgotPasswordView: View {
         }
     }
 }
+
+#Preview("Forgot Password - Input") {
+    NavigationStack {
+        ForgotPasswordView(viewModel: AuthViewModel())
+    }
+}
+
+#Preview("Forgot Password - Success") {
+    let vm = AuthViewModel()
+    vm.forgotPasswordEmail = "sadaqat@example.com"
+    vm.forgotPasswordSuccess = true
+    return NavigationStack {
+        ForgotPasswordView(viewModel: vm)
+    }
+}

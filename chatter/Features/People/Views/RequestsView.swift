@@ -114,3 +114,11 @@ struct RequestsView: View {
         }
     }
 }
+
+#Preview("Requests View") {
+    let vm = PeopleViewModel()
+    vm.receivedRequests = [FriendRequest.mockList[0], FriendRequest.mockList[1]]
+    vm.sentRequests = [FriendRequest.mockList[2]]
+    return RequestsView(viewModel: vm)
+        .background(Color.chatterBackground)
+}

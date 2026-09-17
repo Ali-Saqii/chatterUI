@@ -14,3 +14,8 @@ struct AuthCoordinator: View {
         }
     }
 }
+
+#Preview("Auth Coordinator") {
+    AuthCoordinator()
+        .environmentObject(AppState())
+}

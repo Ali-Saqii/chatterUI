@@ -178,7 +178,11 @@ struct PeopleView: View {
         }
     }
 }
-#Preview {
-    PeopleView()
-        .environmentObject(AppState())
+#Preview("People Screen") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return NavigationStack {
+        PeopleView()
+            .environmentObject(state)
+    }
 }

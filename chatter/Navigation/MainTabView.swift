@@ -57,3 +57,10 @@ struct MainTabView: View {
         .tint(Color.chatterPrimary)
     }
 }
+
+#Preview("Main Tab View") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return MainTabView()
+        .environmentObject(state)
+}

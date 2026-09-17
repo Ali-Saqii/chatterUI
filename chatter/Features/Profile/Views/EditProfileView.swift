@@ -166,3 +166,13 @@ struct EditProfileView: View {
         }
     }
 }
+
+#Preview("Edit Profile") {
+    let vm = ProfileViewModel(username: nil)
+    vm.editFullName = User.mock.fullName
+    vm.editBio = User.mock.bio ?? ""
+    return NavigationStack {
+        EditProfileView(viewModel: vm)
+            .environmentObject(AppState())
+    }
+}

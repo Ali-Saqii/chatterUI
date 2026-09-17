@@ -45,3 +45,12 @@ struct CommentRowView: View {
         .padding(.vertical, 8)
     }
 }
+
+#Preview("Comment Row") {
+    VStack(spacing: 12) {
+        CommentRowView(comment: Comment.mockComments(for: "1")[0])
+        CommentRowView(comment: Comment.mockComments(for: "1")[1])
+    }
+    .padding()
+    .background(Color.chatterBackground)
+}

@@ -32,3 +32,15 @@ struct RootView: View {
         }
     }
 }
+
+#Preview("Root View - Unauthenticated") {
+    RootView()
+        .environmentObject(AppState())
+}
+
+#Preview("Root View - Authenticated") {
+    let state = AppState()
+    state.setAuthenticated(token: "mock_token", user: User.mock)
+    return RootView()
+        .environmentObject(state)
+}

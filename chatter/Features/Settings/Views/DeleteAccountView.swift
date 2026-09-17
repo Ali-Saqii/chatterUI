@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct DeleteAccountView: View {
     @ObservedObject var viewModel: SettingsViewModel
@@ -95,5 +96,12 @@ struct DeleteAccountView: View {
         } message: {
             Text("Your account and all associated data will be permanently erased. You will not be able to recover it.")
         }
+    }
+}
+
+#Preview("Delete Account") {
+    NavigationStack {
+        DeleteAccountView(viewModel: SettingsViewModel())
+            .environmentObject(AppState())
     }
 }
