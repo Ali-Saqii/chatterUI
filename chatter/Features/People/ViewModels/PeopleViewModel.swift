@@ -4,7 +4,6 @@
 //
 
 import SwiftUI
-import Combine
 
 @MainActor
 final class PeopleViewModel: ObservableObject {
@@ -28,7 +27,7 @@ final class PeopleViewModel: ObservableObject {
     @Published var sentRequestUserIds: Set<String> = []
     @Published var friendUserIds: Set<String> = []
     
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
     
     // MARK: - All Users / Search
     func searchUsers() async {

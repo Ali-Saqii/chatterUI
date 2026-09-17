@@ -19,15 +19,8 @@ struct PostDetailView: View {
                     PostRowView(
                         post: post,
                         onLikeTapped: {
-                            post.isLikedByMe.toggle()
-                            post.likesCount += post.isLikedByMe ? 1 : -1
+                            post = PostActionService.toggleLike(on: post)
                             onPostUpdated?(post)
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            Task {
-                                do {
-                                    let _: EmptyResponse = try await APIClient.shared.request(.toggleLike(postId: post.id))
-                                } catch {}
-                            }
                         },
                         onDeleteTapped: nil,
                         onCommentTapped: nil

@@ -5,6 +5,14 @@
 
 import Foundation
 
+private extension Data {
+    mutating func appendUTF8(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
+        }
+    }
+}
+
 struct APIResponse<T: Decodable>: Decodable {
     let success: Bool
     let message: String?
@@ -127,21 +135,21 @@ final class APIClient {
         
         // Append text fields
         for (key, value) in fields {
-            bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            bodyData.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
-            bodyData.append("\(value)\r\n".data(using: .utf8)!)
+            bodyData.appendUTF8("--\(boundary)\r\n")
+            bodyData.appendUTF8("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            bodyData.appendUTF8("\(value)\r\n")
         }
         
         // Append file fields
         for file in files {
-            bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
-            bodyData.append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n".data(using: .utf8)!)
-            bodyData.append("Content-Type: \(file.mimeType)\r\n\r\n".data(using: .utf8)!)
+            bodyData.appendUTF8("--\(boundary)\r\n")
+            bodyData.appendUTF8("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n")
+            bodyData.appendUTF8("Content-Type: \(file.mimeType)\r\n\r\n")
             bodyData.append(file.data)
-            bodyData.append("\r\n".data(using: .utf8)!)
+            bodyData.appendUTF8("\r\n")
         }
         
-        bodyData.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        bodyData.appendUTF8("--\(boundary)--\r\n")
         urlRequest.httpBody = bodyData
         
         return try await execute(urlRequest)
@@ -168,21 +176,18 @@ final class APIClient {
         let envelope: APIResponse<T>? = try? decoder.decode(APIResponse<T>.self, from: data)
         
         if (200...299).contains(httpResponse.statusCode) {
-            if let envelope = envelope {
-                if let payload = envelope.data {
-                    return payload
-                } else if T.self == EmptyResponse.self {
-                    return EmptyResponse() as! T
-                }
+            // Fast path: EmptyResponse doesn't need decoding
+            if T.self == EmptyResponse.self, let empty = EmptyResponse() as? T {
+                return empty
+            }
+            
+            if let envelope = envelope, let payload = envelope.data {
+                return payload
             }
             
             // If envelope didn't match or data was direct:
             if let directPayload = try? decoder.decode(T.self, from: data) {
                 return directPayload
-            }
-            
-            if T.self == EmptyResponse.self {
-                return EmptyResponse() as! T
             }
             
             throw APIError.emptyData

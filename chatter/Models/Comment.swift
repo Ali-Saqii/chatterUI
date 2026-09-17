@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Comment: Identifiable, Codable, Equatable, Hashable {
+struct Comment: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     let post: String
     let author: User

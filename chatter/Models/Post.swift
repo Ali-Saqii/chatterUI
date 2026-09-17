@@ -11,7 +11,7 @@ enum MediaType: String, Codable {
     case video = "video"
 }
 
-struct Post: Identifiable, Codable, Equatable, Hashable {
+struct Post: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     let author: User
     let text: String?

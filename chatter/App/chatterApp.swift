@@ -6,7 +6,7 @@
 import SwiftUI
 
 @main
-struct chatterApp: App {
+struct ChatterApp: App {
     @StateObject private var appState = AppState()
     
     var body: some Scene {

@@ -4,7 +4,6 @@
 //
 
 import SwiftUI
-import Combine
 
 struct LoginRequestBody: Encodable {
     let identifier: String
@@ -42,7 +41,7 @@ final class AuthViewModel: ObservableObject {
     
     // Shared State
     @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
     
     // MARK: - Actions
     func login(appState: AppState) async {

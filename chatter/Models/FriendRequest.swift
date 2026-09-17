@@ -12,7 +12,7 @@ enum FriendRequestStatus: String, Codable {
     case cancelled = "cancelled"
 }
 
-struct FriendRequest: Identifiable, Codable, Equatable, Hashable {
+struct FriendRequest: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     let sender: User
     let receiver: User

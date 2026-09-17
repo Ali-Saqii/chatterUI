@@ -4,7 +4,6 @@
 //
 
 import SwiftUI
-import Combine
 import PhotosUI
 
 @MainActor
@@ -14,15 +13,15 @@ final class ProfileViewModel: ObservableObject {
     @Published var isLoadingProfile: Bool = false
     @Published var isLoadingPosts: Bool = false
     @Published var friendActionState: FriendActionState = .loading
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
     
     // Edit Profile State
     @Published var editFullName: String = ""
     @Published var editUsername: String = ""
     @Published var editBio: String = ""
-    @Published var selectedAvatarItem: PhotosPickerItem? = nil
-    @Published var selectedAvatarData: Data? = nil
-    @Published var avatarPreviewImage: UIImage? = nil
+    @Published var selectedAvatarItem: PhotosPickerItem?
+    @Published var selectedAvatarData: Data?
+    @Published var avatarPreviewImage: UIImage?
     @Published var isSavingProfile: Bool = false
     @Published var showEditProfileSheet: Bool = false
     
@@ -259,16 +258,7 @@ final class ProfileViewModel: ObservableObject {
     
     func toggleLike(for post: Post) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
-        var updated = posts[index]
-        updated.isLikedByMe.toggle()
-        updated.likesCount += updated.isLikedByMe ? 1 : -1
-        posts[index] = updated
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        Task {
-            do {
-                let _: EmptyResponse = try await APIClient.shared.request(.toggleLike(postId: post.id))
-            } catch {}
-        }
+        posts[index] = PostActionService.toggleLike(on: posts[index])
     }
     
     func deletePost(postId: String) async {

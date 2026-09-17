@@ -56,10 +56,8 @@ final class AppState: ObservableObject {
             let user: User = try await APIClient.shared.request(.getMyProfile)
             self.currentUser = user
         } catch {
-            // If unauthorized, token is invalid
-            if case APIError.unauthorized = error {
-                handleSessionExpired()
-            }
+            // 401 is handled by AuthInterceptor → NotificationCenter → handleSessionExpired()
+            // No duplicate handling needed here
         }
     }
     

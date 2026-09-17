@@ -4,7 +4,6 @@
 //
 
 import SwiftUI
-import Combine
 
 @MainActor
 final class FeedViewModel: ObservableObject {
@@ -12,7 +11,7 @@ final class FeedViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var isRefreshing: Bool = false
     @Published var isLoadingMore: Bool = false
-    @Published var errorMessage: String? = nil
+    @Published var errorMessage: String?
     @Published var showCreatePostSheet: Bool = false
     
     private var currentPage = 1
@@ -101,22 +100,7 @@ final class FeedViewModel: ObservableObject {
     
     func toggleLike(for post: Post) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
-        
-        // Optimistic toggle
-        var updated = posts[index]
-        updated.isLikedByMe.toggle()
-        updated.likesCount += updated.isLikedByMe ? 1 : -1
-        posts[index] = updated
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        
-        // Ready for 1-line real endpoint switch:
-        Task {
-            do {
-                let _: EmptyResponse = try await APIClient.shared.request(.toggleLike(postId: post.id))
-            } catch {
-                // If endpoint not implemented yet, placeholder mock keeps optimistic toggle
-            }
-        }
+        posts[index] = PostActionService.toggleLike(on: posts[index])
     }
     
     func updatePost(_ updatedPost: Post) {

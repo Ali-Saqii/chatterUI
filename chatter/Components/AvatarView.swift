@@ -25,19 +25,7 @@ struct AvatarView: View {
     }
     
     private var resolvedURL: URL? {
-        guard let urlString = urlString, !urlString.isEmpty else { return nil }
-        if urlString.hasPrefix("http") {
-            return URL(string: urlString)
-        }
-        // If relative path from backend
-        var base = APIClient.shared.baseURL
-        if base.hasSuffix("/api/") {
-            base = String(base.dropLast(5))
-        } else if base.hasSuffix("/api") {
-            base = String(base.dropLast(4))
-        }
-        let full = base.hasSuffix("/") ? "\(base)\(urlString)" : "\(base)/\(urlString)"
-        return URL(string: full)
+        URLResolver.resolve(urlString)
     }
     
     var body: some View {

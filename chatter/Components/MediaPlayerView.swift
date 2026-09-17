@@ -16,18 +16,7 @@ struct MediaPlayerView: View {
     @State private var isFullScreen = false
     
     private var resolvedURL: URL? {
-        guard let mediaURL = mediaURL, !mediaURL.isEmpty else { return nil }
-        if mediaURL.hasPrefix("http") {
-            return URL(string: mediaURL)
-        }
-        var base = APIClient.shared.baseURL
-        if base.hasSuffix("/api/") {
-            base = String(base.dropLast(5))
-        } else if base.hasSuffix("/api") {
-            base = String(base.dropLast(4))
-        }
-        let full = base.hasSuffix("/") ? "\(base)\(mediaURL)" : "\(base)/\(mediaURL)"
-        return URL(string: full)
+        URLResolver.resolve(mediaURL)
     }
     
     var body: some View {
@@ -112,6 +101,7 @@ struct MediaPlayerView: View {
             }
             .onDisappear {
                 player?.pause()
+                player = nil
             }
         }
     }

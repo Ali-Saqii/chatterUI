@@ -4,26 +4,29 @@
 //
 
 import SwiftUI
-import Combine
 import PhotosUI
+
+private struct AddCommentRequestBody: Encodable {
+    let text: String
+}
 
 @MainActor
 final class PostViewModel: ObservableObject {
     // Post Creation State
     @Published var postText: String = ""
-    @Published var selectedPhotoItem: PhotosPickerItem? = nil
-    @Published var selectedMediaData: Data? = nil
+    @Published var selectedPhotoItem: PhotosPickerItem?
+    @Published var selectedMediaData: Data?
     @Published var selectedMediaType: MediaType = .none
-    @Published var previewImage: UIImage? = nil
+    @Published var previewImage: UIImage?
     @Published var isCreatingPost: Bool = false
-    @Published var creationErrorMessage: String? = nil
+    @Published var creationErrorMessage: String?
     
     // Post Detail & Comments State
     @Published var comments: [Comment] = []
     @Published var newCommentText: String = ""
     @Published var isLoadingComments: Bool = false
     @Published var isSubmittingComment: Bool = false
-    @Published var commentErrorMessage: String? = nil
+    @Published var commentErrorMessage: String?
     
     // MARK: - Media Selection
     func handlePhotoSelection(_ item: PhotosPickerItem?) async {
@@ -106,10 +109,6 @@ final class PostViewModel: ObservableObject {
         }
     }
     
-struct AddCommentRequestBody: Encodable {
-    let text: String
-}
-
     // MARK: - Comments
     func loadComments(for postId: String) async {
         isLoadingComments = true

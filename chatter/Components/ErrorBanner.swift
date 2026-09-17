@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-enum BannerType {
+enum BannerType: Equatable {
     case error
     case success
     case info
@@ -36,10 +36,6 @@ enum BannerType {
 struct BannerData: Equatable {
     let message: String
     let type: BannerType
-    
-    static func == (lhs: BannerData, rhs: BannerData) -> Bool {
-        lhs.message == rhs.message && lhs.type == rhs.type
-    }
 }
 
 struct ErrorBanner: View {

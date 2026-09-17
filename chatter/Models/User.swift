@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct PaginationInfo: Codable, Equatable {
+struct PaginationInfo: Codable, Equatable, Sendable {
     let total: Int
     let page: Int
     let limit: Int
@@ -23,7 +23,7 @@ struct PaginationInfo: Codable, Equatable {
     }
 }
 
-struct User: Identifiable, Codable, Equatable, Hashable {
+struct User: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     var fullName: String
     var username: String
