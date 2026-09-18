@@ -99,14 +99,6 @@ struct ProfileView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             }
                             
-                            NavigationLink(destination: SettingsView()) {
-                                Image(systemName: "gearshape")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.chatterText)
-                                    .frame(width: 36, height: 34)
-                                    .background(Color.chatterInputBackground)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            }
                         } else {
                             ShareLink(item: "Check out @\(user.username) on Chatter!") {
                                 Image(systemName: "square.and.arrow.up")
@@ -120,8 +112,8 @@ struct ProfileView: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // 4. Story Highlights (Instagram Signature)
-                    highlightsSection
+//                    // 4. Story Highlights (Instagram Signature)
+//                    highlightsSection
                     
                     // 5. Instagram Tabs (Grid vs Feed)
                     VStack(spacing: 0) {
@@ -185,7 +177,7 @@ struct ProfileView: View {
             if isMyProfile {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "line.3.horizontal")
+                        Image(systemName: "gear")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.chatterText)
                     }

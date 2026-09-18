@@ -81,29 +81,28 @@ struct FeedView: View {
                 }
             }
         }
-        .navigationTitle("Feed")
+        .navigationTitle("Chatter")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack(spacing: 6) {
-                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                        .foregroundStyle(Color.chatterGradient)
-                        .font(.system(size: 20, weight: .bold))
-                    Text("Chatter")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.chatterGradient)
-                }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
+
+            ToolbarItem(placement: .topBarLeading) {
                 Button(action: {
                     viewModel.showCreatePostSheet = true
                 }) {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 22))
+                        .font(.system(size: 35))
                         .foregroundStyle(Color.chatterGradient)
                 }
-            }
+            }.sharedBackgroundVisibility(.hidden)
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                  
+                }) {
+                    Image(systemName: "bell.circle.fill")
+                        .font(.system(size: 35))
+                        .foregroundStyle(Color.chatterGradient)
+                }
+            }.sharedBackgroundVisibility(.hidden)
         }
         .sheet(isPresented: $viewModel.showCreatePostSheet) {
             NavigationStack {

@@ -8,8 +8,8 @@ import SwiftUI
 enum TabSelection: Int, Hashable {
     case feed = 0
     case people = 1
-    case profile = 2
-    case settings = 3
+    case chat = 2
+    case profile = 3
 }
 
 struct MainTabView: View {
@@ -36,7 +36,16 @@ struct MainTabView: View {
             }
             .tag(TabSelection.people)
             
-            // Tab 3: Profile
+            // Tab 3: Chat
+            NavigationStack {
+                ChatListView()
+            }
+            .tabItem {
+                Label("Chat", systemImage: selectedTab == .chat ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
+            }
+            .tag(TabSelection.chat)
+            
+            // Tab 4: Profile
             NavigationStack {
                 ProfileView(username: nil)
             }
@@ -44,15 +53,6 @@ struct MainTabView: View {
                 Label("Profile", systemImage: selectedTab == .profile ? "person.crop.circle.fill" : "person.crop.circle")
             }
             .tag(TabSelection.profile)
-            
-            // Tab 4: Settings
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("Settings", systemImage: selectedTab == .settings ? "gearshape.fill" : "gearshape")
-            }
-            .tag(TabSelection.settings)
         }
         .tint(Color.chatterPrimary)
     }
