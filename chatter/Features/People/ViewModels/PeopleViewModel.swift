@@ -6,9 +6,19 @@
 import SwiftUI
 import Combine
 
+enum RequestFilter: String, CaseIterable, Identifiable {
+    case received = "Friend Requests"
+    case sent = "Sent Requests"
+    
+    var id: String { rawValue }
+}
+
 @MainActor
 final class PeopleViewModel: ObservableObject {
     @Published var selectedTab: Int = 0 // 0: All People, 1: Friends, 2: Requests
+    @Published var requestFilter: RequestFilter = .received
+    
+    var currentUserId: String?
     
     // All People / Search
     @Published var searchQuery: String = ""
@@ -30,15 +40,48 @@ final class PeopleViewModel: ObservableObject {
     
     @Published var errorMessage: String?
     
-    // MARK: - All Users / Search
+    // MARK: - Dispatcher for Query or Tab Change
+    func onSearchQueryOrTabChanged() async {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            switch selectedTab {
+            case 0:
+                await fetchAllUsers()
+            case 1:
+                await fetchFriends()
+            case 2:
+                await fetchRequests()
+            default:
+                break
+            }
+        } else {
+            switch selectedTab {
+            case 0:
+                await searchPeople(query: trimmed)
+            case 1:
+                await searchFriends(query: trimmed)
+            case 2:
+                await searchFriendRequests(query: trimmed)
+            default:
+                break
+            }
+        }
+    }
+    
+    // Backwards-compatible alias
     func searchUsers() async {
+        await onSearchQueryOrTabChanged()
+    }
+    
+    // MARK: - All Users (Default without query)
+    func fetchAllUsers() async {
         isLoadingUsers = true
         errorMessage = nil
         defer { isLoadingUsers = false }
         
         do {
             let response: PaginatedUsersResponse = try await APIClient.shared.request(
-                .searchUsers(query: searchQuery, page: 1, limit: 30)
+                .getAllUsers(page: 1, limit: 50)
             )
             self.allUsers = response.users
         } catch {
@@ -46,7 +89,29 @@ final class PeopleViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Friends
+    // MARK: - Search People (With query)
+    func searchPeople(query: String) async {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            await fetchAllUsers()
+            return
+        }
+        
+        isLoadingUsers = true
+        errorMessage = nil
+        defer { isLoadingUsers = false }
+        
+        do {
+            let response: PaginatedUsersResponse = try await APIClient.shared.request(
+                .searchPeople(query: trimmed, page: 1, limit: 50)
+            )
+            self.allUsers = response.users
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Friends (Default without query)
     func fetchFriends() async {
         isLoadingFriends = true
         errorMessage = nil
@@ -63,7 +128,29 @@ final class PeopleViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Requests
+    // MARK: - Search Friends (With query)
+    func searchFriends(query: String) async {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            await fetchFriends()
+            return
+        }
+        
+        isLoadingFriends = true
+        errorMessage = nil
+        defer { isLoadingFriends = false }
+        
+        do {
+            let response: PaginatedFriendsResponse = try await APIClient.shared.request(
+                .searchFriends(query: trimmed, page: 1, limit: 50)
+            )
+            self.friends = response.friends
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Requests (Default without query)
     func fetchRequests() async {
         isLoadingRequests = true
         errorMessage = nil
@@ -77,6 +164,35 @@ final class PeopleViewModel: ObservableObject {
             self.receivedRequests = rec.requests
             self.sentRequests = sent.requests
             self.sentRequestUserIds = Set(sent.requests.map { $0.receiver.id })
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Search Friend Requests (With query)
+    func searchFriendRequests(query: String) async {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            await fetchRequests()
+            return
+        }
+        
+        isLoadingRequests = true
+        errorMessage = nil
+        defer { isLoadingRequests = false }
+        
+        do {
+            let response: PaginatedRequestsResponse = try await APIClient.shared.request(
+                .searchFriendRequests(query: trimmed, page: 1, limit: 50)
+            )
+            
+            if let myId = currentUserId, !myId.isEmpty {
+                self.receivedRequests = response.requests.filter { $0.receiver.id == myId || ($0.sender.id != myId && !$0.sender.id.isEmpty) }
+                self.sentRequests = response.requests.filter { $0.sender.id == myId }
+            } else {
+                self.receivedRequests = response.requests
+                self.sentRequests = response.requests
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

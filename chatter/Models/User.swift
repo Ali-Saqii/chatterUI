@@ -125,9 +125,33 @@ struct PaginatedUsersResponse: Codable {
     let users: [User]
     let pagination: PaginationInfo
     
+    enum CodingKeys: String, CodingKey {
+        case users
+        case people
+        case pagination
+    }
+    
     init(users: [User] = [], pagination: PaginationInfo = PaginationInfo()) {
         self.users = users
         self.pagination = pagination
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let userList = try? container.decode([User].self, forKey: .users) {
+            self.users = userList
+        } else if let peopleList = try? container.decode([User].self, forKey: .people) {
+            self.users = peopleList
+        } else {
+            self.users = []
+        }
+        self.pagination = (try? container.decode(PaginationInfo.self, forKey: .pagination)) ?? PaginationInfo()
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(users, forKey: .users)
+        try container.encode(pagination, forKey: .pagination)
     }
 }
 

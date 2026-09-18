@@ -22,6 +22,8 @@ enum APIEndpoint {
     // Users
     case getMyProfile
     case getUserProfile(username: String)
+    case getAllUsers(page: Int = 1, limit: Int = 20)
+    case searchPeople(query: String, page: Int = 1, limit: Int = 20)
     case searchUsers(query: String?, page: Int = 1, limit: Int = 20)
     case updateProfile
     case updateProfilePicture
@@ -30,8 +32,10 @@ enum APIEndpoint {
     
     // Friends
     case getFriends(page: Int = 1, limit: Int = 20)
+    case searchFriends(query: String, page: Int = 1, limit: Int = 20)
     case getReceivedRequests(page: Int = 1, limit: Int = 20)
     case getSentRequests(page: Int = 1, limit: Int = 20)
+    case searchFriendRequests(query: String, page: Int = 1, limit: Int = 20)
     case sendFriendRequest(userId: String)
     case acceptFriendRequest(requestId: String)
     case declineFriendRequest(requestId: String)
@@ -45,10 +49,12 @@ enum APIEndpoint {
     case getUserPosts(userId: String, page: Int = 1, limit: Int = 20)
     case getMyPosts(page: Int = 1, limit: Int = 20)
     
-    // Placeholder endpoints for Likes & Comments for future one-line switchover
+    // Comments & Likes — backend: /api/comment/...
     case getComments(postId: String)
     case addComment(postId: String)
-    case toggleLike(postId: String)
+    case deleteComment(commentId: String)
+    case likePost(postId: String)
+    case unlikePost(postId: String)
     
     var path: String {
         switch self {
@@ -58,75 +64,97 @@ enum APIEndpoint {
             return "auth/login"
         case .forgotPassword:
             return "auth/forgot-password"
-            
+
+        // Backend: /api/user/...
         case .getMyProfile:
-            return "users/me"
+            return "user/profile"
         case .getUserProfile(let username):
-            return "users/\(username.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? username)"
-        case .searchUsers:
-            return "users"
+            return "user/\(username.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? username)"
+        case .getAllUsers:
+            return "friend/allUsers"
+        case .searchPeople:
+            return "friend/searchPeople"
+        case .searchUsers(let query, _, _):
+            if let q = query, !q.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "friend/searchPeople"
+            }
+            return "friend/allUsers"
         case .updateProfile:
-            return "users/me"
+            return "user/updateProfile"
         case .updateProfilePicture:
-            return "users/profile-picture"
+            return "user/profilePicture"
         case .updatePassword:
-            return "users/update-password"
+            return "user/updatePassword"
         case .deleteAccount:
-            return "users/me"
-            
+            return "user/delete"
+
+        // Backend: /api/friend/...
         case .getFriends:
-            return "friends"
+            return "friend/friendsList"
+        case .searchFriends:
+            return "friend/searchFriends"
         case .getReceivedRequests:
-            return "friends/requests/received"
+            return "friend/friendRequests"
         case .getSentRequests:
-            return "friends/requests/sent"
+            return "friend/sentRequests"
+        case .searchFriendRequests:
+            return "friend/searchFriendRequests"
         case .sendFriendRequest(let userId):
-            return "friends/request/\(userId)"
+            return "friend/sendRequest/\(userId)"
         case .acceptFriendRequest(let requestId):
-            return "friends/accept/\(requestId)"
+            return "friend/acceptRequest/\(requestId)"
         case .declineFriendRequest(let requestId):
-            return "friends/decline/\(requestId)"
+            return "friend/declineRequest/\(requestId)"
         case .cancelFriendRequest(let requestId):
-            return "friends/cancel/\(requestId)"
+            return "friend/cancelRequest/\(requestId)"
         case .removeFriend(let friendId):
-            return "friends/\(friendId)"
-            
+            return "friend/deleteFriend/\(friendId)"
+
+        // Backend: /api/post/...
         case .getFeed:
-            return "posts/feed"
+            return "post/feed"
         case .createPost:
-            return "posts/createPost"
+            return "post/createPost"
         case .deletePost(let postId):
-            return "posts/\(postId)"
+            return "post/deletePost/\(postId)"
         case .getUserPosts(let userId, _, _):
-            return "posts/user/\(userId)"
+            return "post/userPosts/\(userId)"
         case .getMyPosts:
-            return "posts/me"
-            
+            return "post/myPosts"
+
+        // Backend: /api/comment/...
         case .getComments(let postId):
-            return "posts/\(postId)/comments"
+            return "comment/getComments/\(postId)"
         case .addComment(let postId):
-            return "posts/\(postId)/comments"
-        case .toggleLike(let postId):
-            return "posts/\(postId)/like"
+            return "comment/createComment/\(postId)"
+        case .deleteComment(let commentId):
+            return "comment/deleteComment/\(commentId)"
+        case .likePost(let postId):
+            return "comment/likePost/\(postId)"
+        case .unlikePost(let postId):
+            return "comment/unlikePost/\(postId)"
         }
     }
     
     var method: HTTPMethod {
         switch self {
-        case .getMyProfile, .getUserProfile, .searchUsers,
-             .getFriends, .getReceivedRequests, .getSentRequests,
+        case .getMyProfile, .getUserProfile, .getAllUsers, .searchPeople, .searchUsers,
+             .getFriends, .searchFriends, .getReceivedRequests, .getSentRequests, .searchFriendRequests,
              .getFeed, .getUserPosts, .getMyPosts, .getComments:
             return .get
             
         case .register, .login, .forgotPassword,
-             .sendFriendRequest, .createPost, .addComment, .toggleLike:
+             .sendFriendRequest, .acceptFriendRequest, .declineFriendRequest, .cancelFriendRequest,
+             .createPost, .addComment, .likePost, .unlikePost:
             return .post
             
-        case .updateProfile, .updateProfilePicture, .updatePassword,
-             .acceptFriendRequest, .declineFriendRequest:
+        case .updateProfile, .updatePassword:
+            return .put
+            
+        case .updateProfilePicture:
             return .patch
             
-        case .deleteAccount, .cancelFriendRequest, .removeFriend, .deletePost:
+        case .deleteAccount, .removeFriend, .deletePost, .deleteComment:
             return .delete
         }
     }
@@ -142,13 +170,32 @@ enum APIEndpoint {
     
     var queryItems: [URLQueryItem]? {
         switch self {
+        case .getAllUsers(let page, let limit):
+            return [
+                URLQueryItem(name: "page", value: "\(page)"),
+                URLQueryItem(name: "limit", value: "\(limit)")
+            ]
+            
+        case .searchPeople(let query, let page, let limit),
+             .searchFriends(let query, let page, let limit),
+             .searchFriendRequests(let query, let page, let limit):
+            var items = [
+                URLQueryItem(name: "page", value: "\(page)"),
+                URLQueryItem(name: "limit", value: "\(limit)")
+            ]
+            let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                items.append(URLQueryItem(name: "q", value: trimmed))
+            }
+            return items
+            
         case .searchUsers(let query, let page, let limit):
             var items = [
                 URLQueryItem(name: "page", value: "\(page)"),
                 URLQueryItem(name: "limit", value: "\(limit)")
             ]
             if let query = query, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                items.append(URLQueryItem(name: "search", value: query))
+                items.append(URLQueryItem(name: "q", value: query))  // backend uses req.query.q
             }
             return items
             

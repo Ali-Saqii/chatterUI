@@ -61,7 +61,7 @@ struct FriendsListView: View {
             }
         }
         .refreshable {
-            await viewModel.fetchFriends()
+            await viewModel.onSearchQueryOrTabChanged()
         }
     }
 }

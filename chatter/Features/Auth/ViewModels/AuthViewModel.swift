@@ -146,6 +146,8 @@ final class AuthViewModel: ObservableObject {
             let body = ForgotPasswordRequestBody(email: email)
             let _: EmptyResponse = try await APIClient.shared.request(.forgotPassword, body: body)
             forgotPasswordSuccess = true
+        } catch APIError.serverError(let msg) where msg.lowercased().contains("email") || msg.lowercased().contains("ssl") || msg.lowercased().contains("configured") {
+            errorMessage = "Email service is currently unavailable. Please try again later."
         } catch {
             errorMessage = error.localizedDescription
         }

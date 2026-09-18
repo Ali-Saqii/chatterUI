@@ -19,9 +19,42 @@ struct PeopleView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.bottom, 8)
             .background(Color.chatterCardBackground)
-            
+            // Search Bar
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.chatterSubtext)
+                
+                TextField("Search by name or @username...", text: $viewModel.searchQuery)
+                    .font(.chatterBody)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .onSubmit {
+                        Task {
+                            await viewModel.onSearchQueryOrTabChanged()
+                        }
+                    }
+                
+                if !viewModel.searchQuery.isEmpty {
+                    Button(action: {
+                        viewModel.searchQuery = ""
+                        Task {
+                            await viewModel.onSearchQueryOrTabChanged()
+                        }
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.chatterSubtext)
+                    }
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.chatterBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .shadow(color:Color.gray.opacity(0.6),radius: 12)
             // Content according to selected tab
             Group {
                 switch viewModel.selectedTab {
@@ -41,6 +74,8 @@ struct PeopleView: View {
         .navigationTitle("People")
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            viewModel.currentUserId = appState.currentUser?.id
+            await viewModel.fetchAllUsers()
             await viewModel.fetchFriends()
             await viewModel.fetchRequests()
         }
@@ -48,47 +83,18 @@ struct PeopleView: View {
             if !viewModel.searchQuery.isEmpty {
                 try? await Task.sleep(nanoseconds: 350_000_000)
             }
-            await viewModel.searchUsers()
+            await viewModel.onSearchQueryOrTabChanged()
+        }
+        .onChange(of: viewModel.selectedTab) { _ in
+            Task {
+                await viewModel.onSearchQueryOrTabChanged()
+            }
         }
     }
     
     @ViewBuilder
     private var allPeopleContent: some View {
         VStack(spacing: 12) {
-            // Search Bar
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.chatterSubtext)
-                
-                TextField("Search by name or @username...", text: $viewModel.searchQuery)
-                    .font(.chatterBody)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .onSubmit {
-                        Task {
-                            await viewModel.searchUsers()
-                        }
-                    }
-                
-                if !viewModel.searchQuery.isEmpty {
-                    Button(action: {
-                        viewModel.searchQuery = ""
-                        Task {
-                            await viewModel.searchUsers()
-                        }
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.chatterSubtext)
-                    }
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(Color.chatterInputBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            
             // User List
             if viewModel.isLoadingUsers && viewModel.allUsers.isEmpty {
                 ScrollView {
@@ -118,7 +124,7 @@ struct PeopleView: View {
                     .padding(.vertical, 8)
                 }
                 .refreshable {
-                    await viewModel.searchUsers()
+                    await viewModel.onSearchQueryOrTabChanged()
                     await viewModel.fetchFriends()
                     await viewModel.fetchRequests()
                 }

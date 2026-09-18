@@ -108,7 +108,9 @@ struct FeedView: View {
         .sheet(isPresented: $viewModel.showCreatePostSheet) {
             NavigationStack {
                 CreatePostView {
-                    Task {
+                    // Sheet dismiss hone par Task cancel na ho isliye detached use karte hain
+                    Task.detached { @MainActor in
+                        try? await Task.sleep(nanoseconds: 300_000_000) // 0.3s — sheet animation complete hone do
                         await viewModel.fetchFeed(isRefresh: true)
                     }
                 }

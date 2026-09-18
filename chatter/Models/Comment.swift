@@ -17,7 +17,8 @@ struct Comment: Identifiable, Codable, Equatable, Hashable, Sendable {
         case mongoId = "_id"
         case post
         case author
-        case text
+        case text      // local/mock use
+        case content   // backend returns this field
         case createdAt
     }
     
@@ -48,7 +49,12 @@ struct Comment: Identifiable, Codable, Equatable, Hashable, Sendable {
         
         self.post = (try? container.decode(String.self, forKey: .post)) ?? ""
         self.author = try container.decode(User.self, forKey: .author)
-        self.text = (try? container.decode(String.self, forKey: .text)) ?? ""
+        // Backend sends 'content', mock/local uses 'text' — try both
+        if let contentVal = try? container.decode(String.self, forKey: .content) {
+            self.text = contentVal
+        } else {
+            self.text = (try? container.decode(String.self, forKey: .text)) ?? ""
+        }
         self.createdAt = try? container.decodeIfPresent(Date.self, forKey: .createdAt)
     }
     

@@ -8,7 +8,12 @@ import PhotosUI
 import Combine
 
 private struct AddCommentRequestBody: Encodable {
-    let text: String
+    let content: String  // Backend expects 'content' field (not 'text')
+}
+
+/// Backend returns: { "data": { "post": { ... } } } — nested one level
+private struct CreatePostWrapper: Decodable {
+    let post: Post
 }
 
 @MainActor
@@ -94,7 +99,8 @@ final class PostViewModel: ObservableObject {
                 )
             }
             
-            let _: Post = try await APIClient.shared.uploadMultipart(
+            // Backend wraps created post in data.post — use wrapper to decode correctly
+            let _: CreatePostWrapper = try await APIClient.shared.uploadMultipart(
                 .createPost,
                 fields: fields,
                 files: files
@@ -115,12 +121,14 @@ final class PostViewModel: ObservableObject {
         isLoadingComments = true
         defer { isLoadingComments = false }
         
+        print("📥 [PostViewModel] loadComments — postId: \(postId)")
         do {
             let loadedComments: [Comment] = try await APIClient.shared.request(.getComments(postId: postId))
+            print("✅ [PostViewModel] Comments loaded: \(loadedComments.count)")
             self.comments = loadedComments
         } catch {
-            // Graceful fallback to initial mock comments if endpoint not yet deployed
-            self.comments = Comment.mockComments(for: postId)
+            print("❌ [PostViewModel] loadComments failed — \(error.localizedDescription)")
+            // Mock fallback hata diya — real errors dekhne ke liye
         }
     }
     
@@ -147,7 +155,7 @@ final class PostViewModel: ObservableObject {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         
         do {
-            let body = AddCommentRequestBody(text: trimmed)
+            let body = AddCommentRequestBody(content: trimmed)
             let createdComment: Comment = try await APIClient.shared.request(
                 .addComment(postId: postId),
                 body: body

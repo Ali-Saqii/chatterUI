@@ -53,8 +53,21 @@ struct FriendRequest: Identifiable, Codable, Equatable, Hashable, Sendable {
             self.id = UUID().uuidString
         }
         
-        self.sender = try container.decode(User.self, forKey: .sender)
-        self.receiver = try container.decode(User.self, forKey: .receiver)
+        if let s = try? container.decode(User.self, forKey: .sender) {
+            self.sender = s
+        } else if let sId = try? container.decode(String.self, forKey: .sender) {
+            self.sender = User(id: sId, fullName: "", username: "")
+        } else {
+            self.sender = User(id: "", fullName: "", username: "")
+        }
+        
+        if let r = try? container.decode(User.self, forKey: .receiver) {
+            self.receiver = r
+        } else if let rId = try? container.decode(String.self, forKey: .receiver) {
+            self.receiver = User(id: rId, fullName: "", username: "")
+        } else {
+            self.receiver = User(id: "", fullName: "", username: "")
+        }
         
         if let rawStatus = try? container.decode(String.self, forKey: .status),
            let parsedStatus = FriendRequestStatus(rawValue: rawStatus) {

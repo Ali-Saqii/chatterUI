@@ -95,6 +95,7 @@ final class APIClient {
         body: Encodable? = nil
     ) async throws -> T {
         guard let url = endpoint.url(baseURL: baseURL) else {
+            print("❌ [APIClient] Invalid URL — baseURL: \(baseURL)")
             throw APIError.invalidURL
         }
         
@@ -102,10 +103,16 @@ final class APIClient {
         urlRequest.httpMethod = endpoint.method.rawValue
         AuthInterceptor.shared.adapt(&urlRequest, requiresAuth: endpoint.requiresAuth)
         
+        print("🌐 [APIClient] \(endpoint.method.rawValue) → \(url.absoluteString)")
+        print("🔑 [APIClient] Auth required: \(endpoint.requiresAuth) | Token hai: \(urlRequest.value(forHTTPHeaderField: "Authorization") != nil)")
+        
         if let body = body {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
             do {
                 urlRequest.httpBody = try JSONEncoder().encode(body)
+                if let bodyStr = String(data: urlRequest.httpBody!, encoding: .utf8) {
+                    print("📤 [APIClient] Request body: \(bodyStr)")
+                }
             } catch {
                 throw APIError.networkError("Failed to encode request body: \(error.localizedDescription)")
             }
@@ -163,10 +170,18 @@ final class APIClient {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
+            print("❌ [APIClient] Network error (koi response nahi aaya): \(error.localizedDescription)")
             throw APIError.networkError(error.localizedDescription)
         }
         
         AuthInterceptor.shared.handleResponse(response)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("📥 [APIClient] Status Code: \(httpResponse.statusCode)")
+        }
+        if let rawStr = String(data: data, encoding: .utf8) {
+            print("📥 [APIClient] Raw Response: \(rawStr.prefix(500))")
+        }
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
