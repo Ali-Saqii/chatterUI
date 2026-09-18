@@ -180,12 +180,12 @@ struct ProfileView: View {
                                 await viewModel.loadProfile(currentUser: appState.currentUser)
                             }
                         }
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
-                        .background(Color.chatterPrimary)
-                        .clipShape(Capsule())
+//                        .font(.system(size: 14, weight: .bold))
+//                        .foregroundColor(.white)
+//                        .padding(.horizontal, 24)
+//                        .padding(.vertical, 10)
+//                        .background(Color.chatterPrimary)
+//                        .clipShape(Capsule())
                     }
                     .padding(.top, 80)
                     .padding(.horizontal, 24)
