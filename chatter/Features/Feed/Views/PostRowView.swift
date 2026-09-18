@@ -7,6 +7,7 @@ import SwiftUI
 
 struct PostRowView: View {
     let post: Post
+    var allowsFullScreen: Bool = false
     var onPostTapped: (() -> Void)? = nil
     var onLikeTapped: (() -> Void)? = nil
     var onDeleteTapped: (() -> Void)? = nil
@@ -87,10 +88,12 @@ struct PostRowView: View {
             
             // Media Preview
             if post.mediaType != .none, let _ = post.mediaURL {
-                MediaPlayerView(mediaURL: post.mediaURL, mediaType: post.mediaType)
+                MediaPlayerView(mediaURL: post.mediaURL, mediaType: post.mediaType, allowsFullScreen: allowsFullScreen)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        onPostTapped?()
+                        if !allowsFullScreen {
+                            onPostTapped?()
+                        }
                     }
             }
             

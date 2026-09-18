@@ -18,6 +18,7 @@ struct PostDetailView: View {
                     // Main Post Card
                     PostRowView(
                         post: post,
+                        allowsFullScreen: true,
                         onLikeTapped: {
                             post = PostActionService.toggleLike(on: post)
                             onPostUpdated?(post)

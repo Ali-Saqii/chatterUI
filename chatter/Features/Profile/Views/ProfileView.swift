@@ -166,6 +166,29 @@ struct ProfileView: View {
                             .padding(.horizontal, 16)
                         }
                     }
+                } else if viewModel.user == nil && !viewModel.isLoadingProfile {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.crop.circle.badge.exclamationmark")
+                            .font(.system(size: 48))
+                            .foregroundColor(.chatterSubtext)
+                        Text(viewModel.errorMessage ?? "User not found")
+                            .font(.chatterHeadline)
+                            .foregroundColor(.chatterText)
+                            .multilineTextAlignment(.center)
+                        Button("Try Again") {
+                            Task {
+                                await viewModel.loadProfile(currentUser: appState.currentUser)
+                            }
+                        }
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(Color.chatterPrimary)
+                        .clipShape(Capsule())
+                    }
+                    .padding(.top, 80)
+                    .padding(.horizontal, 24)
                 }
             }
             .padding(.bottom, 24)

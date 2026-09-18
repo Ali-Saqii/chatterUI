@@ -10,6 +10,7 @@ struct MediaPlayerView: View {
     let mediaURL: String?
     let mediaType: MediaType
     var maxHeight: CGFloat = 340
+    var allowsFullScreen: Bool = false
     
     @State private var player: AVPlayer?
     @State private var isPlaying = false
@@ -42,18 +43,27 @@ struct MediaPlayerView: View {
                     .frame(height: 220)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: maxHeight)
-                        .background(Color.black.opacity(0.03))
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .onTapGesture {
-                            isFullScreen = true
-                        }
-                        .sheet(isPresented: $isFullScreen) {
-                            FullScreenImageView(image: image)
-                        }
+                    if allowsFullScreen {
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: maxHeight)
+                            .background(Color.black.opacity(0.03))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .onTapGesture {
+                                isFullScreen = true
+                            }
+                            .sheet(isPresented: $isFullScreen) {
+                                FullScreenImageView(image: image)
+                            }
+                    } else {
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: maxHeight)
+                            .background(Color.black.opacity(0.03))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
                 case .failure:
                     ZStack {
                         Color.chatterInputBackground

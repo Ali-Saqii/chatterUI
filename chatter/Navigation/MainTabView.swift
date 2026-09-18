@@ -23,7 +23,7 @@ struct MainTabView: View {
                 FeedView()
             }
             .tabItem {
-                Label("Feed", systemImage: selectedTab == .feed ? "house.fill" : "house")
+                Label("Feed", systemImage: "house")
             }
             .tag(TabSelection.feed)
             
@@ -32,7 +32,7 @@ struct MainTabView: View {
                 PeopleView()
             }
             .tabItem {
-                Label("People", systemImage: selectedTab == .people ? "person.2.fill" : "person.2")
+                Label("People", systemImage: "person.2")
             }
             .tag(TabSelection.people)
             
@@ -41,7 +41,7 @@ struct MainTabView: View {
                 ChatListView()
             }
             .tabItem {
-                Label("Chat", systemImage: selectedTab == .chat ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right")
+                Label("Chat", systemImage: "bubble.left.and.bubble.right")
             }
             .tag(TabSelection.chat)
             
@@ -50,7 +50,7 @@ struct MainTabView: View {
                 ProfileView(username: nil)
             }
             .tabItem {
-                Label("Profile", systemImage: selectedTab == .profile ? "person.crop.circle.fill" : "person.crop.circle")
+                Label("Profile", systemImage: "person.crop.circle")
             }
             .tag(TabSelection.profile)
         }
