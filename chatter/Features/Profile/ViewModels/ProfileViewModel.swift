@@ -89,11 +89,9 @@ final class ProfileViewModel: ObservableObject {
         
         // Fetch friends and requests to determine exact relation
         do {
-            async let friendsReq: PaginatedFriendsResponse = APIClient.shared.request(.getFriends(page: 1, limit: 100))
-            async let sentReq: PaginatedRequestsResponse = APIClient.shared.request(.getSentRequests(page: 1, limit: 100))
-            async let receivedReq: PaginatedRequestsResponse = APIClient.shared.request(.getReceivedRequests(page: 1, limit: 100))
-            
-            let (friends, sent, received) = try await (friendsReq, sentReq, receivedReq)
+            let friends: PaginatedFriendsResponse = try await APIClient.shared.request(.getFriends(page: 1, limit: 100))
+            let sent: PaginatedRequestsResponse = try await APIClient.shared.request(.getSentRequests(page: 1, limit: 100))
+            let received: PaginatedRequestsResponse = try await APIClient.shared.request(.getReceivedRequests(page: 1, limit: 100))
             
             // 1. Are they accepted friends?
             if let friendMatch = friends.friends.first(where: { $0.id == targetUser.id || $0.username == targetUser.username }) {

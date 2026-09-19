@@ -16,12 +16,15 @@ struct EditProfileView: View {
             VStack(spacing: 24) {
                 // Avatar with change photo overlay
                 VStack(spacing: 8) {
+                    let previewImage   = viewModel.avatarPreviewImage
+                    let avatarURL      = viewModel.user?.avatarURL
+                    let avatarFullName = viewModel.user?.fullName ?? "User"
                     PhotosPicker(
                         selection: $viewModel.selectedAvatarItem,
                         matching: .images
                     ) {
                         ZStack(alignment: .bottomTrailing) {
-                            if let preview = viewModel.avatarPreviewImage {
+                            if let preview = previewImage {
                                 Image(uiImage: preview)
                                     .resizable()
                                     .scaledToFill()
@@ -29,8 +32,8 @@ struct EditProfileView: View {
                                     .clipShape(Circle())
                             } else {
                                 AvatarView(
-                                    urlString: viewModel.user?.avatarURL,
-                                    name: viewModel.user?.fullName ?? "User",
+                                    urlString: avatarURL,
+                                    name: avatarFullName,
                                     size: 96
                                 )
                             }

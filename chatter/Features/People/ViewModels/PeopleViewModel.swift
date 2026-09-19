@@ -157,10 +157,8 @@ final class PeopleViewModel: ObservableObject {
         defer { isLoadingRequests = false }
         
         do {
-            async let receivedCall: PaginatedRequestsResponse = APIClient.shared.request(.getReceivedRequests(page: 1, limit: 50))
-            async let sentCall: PaginatedRequestsResponse = APIClient.shared.request(.getSentRequests(page: 1, limit: 50))
-            
-            let (rec, sent) = try await (receivedCall, sentCall)
+            let rec: PaginatedRequestsResponse = try await APIClient.shared.request(.getReceivedRequests(page: 1, limit: 50))
+            let sent: PaginatedRequestsResponse = try await APIClient.shared.request(.getSentRequests(page: 1, limit: 50))
             self.receivedRequests = rec.requests
             self.sentRequests = sent.requests
             self.sentRequestUserIds = Set(sent.requests.map { $0.receiver.id })
