@@ -42,8 +42,8 @@ final class APIClient {
     
     private init() {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 30
-        configuration.timeoutIntervalForResource = 60
+        configuration.timeoutIntervalForRequest = 120   // 2 min per request chunk
+        configuration.timeoutIntervalForResource = 600  // 10 min total for large video upload
         self.session = URLSession(configuration: configuration)
         
         self.decoder = JSONDecoder()

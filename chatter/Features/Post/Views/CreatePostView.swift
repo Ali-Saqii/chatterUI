@@ -5,6 +5,7 @@
 
 import SwiftUI
 import PhotosUI
+import AVKit
 
 struct CreatePostView: View {
     @StateObject private var viewModel = PostViewModel()
@@ -77,19 +78,20 @@ struct CreatePostView: View {
                     .padding(.horizontal, 16)
                 } else if viewModel.selectedMediaType == .video {
                     ZStack(alignment: .topTrailing) {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.chatterInputBackground)
-                            .frame(height: 180)
-                            .overlay(
-                                VStack(spacing: 8) {
-                                    Image(systemName: "video.fill")
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.chatterPrimary)
-                                    Text("Video Attached")
-                                        .font(.chatterSubheadline)
-                                        .foregroundColor(.chatterText)
-                                }
-                            )
+                        if let videoURL = viewModel.videoURL {
+                            VideoPlayer(player: AVPlayer(url: videoURL))
+                                .frame(height: 240)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        } else {
+                            // Fallback while temp file is being written
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.chatterInputBackground)
+                                .frame(height: 180)
+                                .overlay(
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .chatterPrimary))
+                                )
+                        }
                         
                         Button(action: {
                             viewModel.clearSelectedMedia()

@@ -24,6 +24,7 @@ final class PostViewModel: ObservableObject {
     @Published var selectedMediaData: Data?
     @Published var selectedMediaType: MediaType = .none
     @Published var previewImage: UIImage?
+    @Published var videoURL: URL?          // local temp URL for video preview/playback
     @Published var isCreatingPost: Bool = false
     @Published var creationErrorMessage: String?
     
@@ -42,13 +43,20 @@ final class PostViewModel: ObservableObject {
             if let data = try await item.loadTransferable(type: Data.self) {
                 self.selectedMediaData = data
                 
-                // Determine if image or video
+                // Try to decode as image first
                 if let uiImage = UIImage(data: data) {
                     self.previewImage = uiImage
+                    self.videoURL = nil
                     self.selectedMediaType = .image
                 } else {
-                    // Video or other format
+                    // It's a video — write data to a temp file for AVPlayer
+                    self.previewImage = nil
                     self.selectedMediaType = .video
+                    let tempURL = FileManager.default.temporaryDirectory
+                        .appendingPathComponent(UUID().uuidString)
+                        .appendingPathExtension("mp4")
+                    try data.write(to: tempURL)
+                    self.videoURL = tempURL
                 }
             }
         } catch {
@@ -61,6 +69,7 @@ final class PostViewModel: ObservableObject {
         self.selectedMediaData = nil
         self.selectedMediaType = .none
         self.previewImage = nil
+        self.videoURL = nil
     }
     
     // MARK: - Create Post
