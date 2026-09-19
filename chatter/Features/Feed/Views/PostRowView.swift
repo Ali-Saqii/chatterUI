@@ -14,6 +14,7 @@ struct PostRowView: View {
     var onCommentTapped: (() -> Void)? = nil
     
     @EnvironmentObject private var appState: AppState
+    @StateObject private var downloadManager = DownloadManager()
     
     private var isOwnPost: Bool {
         guard let current = appState.currentUser else { return false }
@@ -145,10 +146,35 @@ struct PostRowView: View {
                         .font(.system(size: 16))
                         .foregroundColor(.chatterSubtext)
                 }
+                
+                // Download button — only shown when post has media
+                if post.mediaType != .none, let mediaURL = post.mediaURL {
+                    Button(action: {
+                        Task {
+                            await downloadManager.download(
+                                urlString: mediaURL,
+                                mediaType: post.mediaType
+                            )
+                        }
+                    }) {
+                        if downloadManager.isDownloading {
+                            ProgressView()
+                                .scaleEffect(0.75)
+                                .frame(width: 18, height: 18)
+                        } else {
+                            Image(systemName: "arrow.down.to.line.circle")
+                                .font(.system(size: 18))
+                                .foregroundColor(.chatterSubtext)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(downloadManager.isDownloading)
+                }
             }
             .padding(.top, 4)
         }
         .chatterCard()
+        .downloadToast(manager: downloadManager)
     }
 }
 

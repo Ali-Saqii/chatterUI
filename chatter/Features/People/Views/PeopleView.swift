@@ -85,7 +85,7 @@ struct PeopleView: View {
             }
             await viewModel.onSearchQueryOrTabChanged()
         }
-        .onChange(of: viewModel.selectedTab) { _ in
+        .onChange(of: viewModel.selectedTab) { _, _ in
             Task {
                 await viewModel.onSearchQueryOrTabChanged()
             }

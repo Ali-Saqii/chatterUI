@@ -116,12 +116,12 @@ struct User: Identifiable, Codable, Equatable, Hashable, Sendable {
 }
 
 // Responses
-struct AuthResponseData: Codable {
+struct AuthResponseData: Codable, Sendable {
     let token: String?
     let user: User?
 }
 
-struct PaginatedUsersResponse: Codable {
+struct PaginatedUsersResponse: Codable, Sendable {
     let users: [User]
     let pagination: PaginationInfo
     
@@ -155,7 +155,7 @@ struct PaginatedUsersResponse: Codable {
     }
 }
 
-struct PaginatedFriendsResponse: Codable {
+struct PaginatedFriendsResponse: Codable, Sendable {
     let friends: [User]
     let pagination: PaginationInfo
     

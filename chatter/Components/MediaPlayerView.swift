@@ -15,6 +15,7 @@ struct MediaPlayerView: View {
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var isFullScreen = false
+    @StateObject private var downloadManager = DownloadManager()
     
     private var resolvedURL: URL? {
         URLResolver.resolve(mediaURL)
@@ -28,6 +29,7 @@ struct MediaPlayerView: View {
                 videoView
             }
         }
+        .downloadToast(manager: downloadManager)
     }
     
     @ViewBuilder
@@ -55,6 +57,9 @@ struct MediaPlayerView: View {
                             }
                             .sheet(isPresented: $isFullScreen) {
                                 FullScreenImageView(image: image)
+                            }
+                            .overlay(alignment: .bottomTrailing) {
+                                downloadButton(mediaType: .image)
                             }
                     } else {
                         image
@@ -93,6 +98,11 @@ struct MediaPlayerView: View {
                     VideoPlayer(player: p)
                         .frame(height: maxHeight)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(alignment: .bottomTrailing) {
+                            if allowsFullScreen {
+                                downloadButton(mediaType: .video)
+                            }
+                        }
                 } else {
                     ZStack {
                         Color.black.opacity(0.8)
@@ -114,6 +124,36 @@ struct MediaPlayerView: View {
                 player = nil
             }
         }
+    }
+    
+    // MARK: - Download Button Overlay
+    
+    @ViewBuilder
+    private func downloadButton(mediaType: MediaType) -> some View {
+        Button(action: {
+            Task {
+                await downloadManager.download(urlString: mediaURL, mediaType: mediaType)
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(Color.black.opacity(0.55))
+                    .frame(width: 38, height: 38)
+                
+                if downloadManager.isDownloading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.75)
+                } else {
+                    Image(systemName: "arrow.down.to.line")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(downloadManager.isDownloading)
+        .padding(10)
     }
 }
 

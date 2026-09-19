@@ -120,7 +120,7 @@ struct FriendRequest: Identifiable, Codable, Equatable, Hashable, Sendable {
     ]
 }
 
-struct PaginatedRequestsResponse: Codable {
+struct PaginatedRequestsResponse: Codable, Sendable {
     let requests: [FriendRequest]
     let pagination: PaginationInfo
     
