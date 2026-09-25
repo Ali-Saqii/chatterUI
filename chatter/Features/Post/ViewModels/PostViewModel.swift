@@ -127,6 +127,11 @@ final class PostViewModel: ObservableObject {
     
     // MARK: - Comments
     func loadComments(for postId: String) async {
+        let cached = CoreDataManager.shared.loadCachedComments(for: postId)
+        if !cached.isEmpty {
+            self.comments = cached
+        }
+        
         isLoadingComments = true
         defer { isLoadingComments = false }
         
@@ -135,9 +140,12 @@ final class PostViewModel: ObservableObject {
             let loadedComments: [Comment] = try await APIClient.shared.request(.getComments(postId: postId))
             print("✅ [PostViewModel] Comments loaded: \(loadedComments.count)")
             self.comments = loadedComments
+            CoreDataManager.shared.saveComments(loadedComments, for: postId)
         } catch {
             print("❌ [PostViewModel] loadComments failed — \(error.localizedDescription)")
-            // Mock fallback hata diya — real errors dekhne ke liye
+            if self.comments.isEmpty {
+                self.comments = CoreDataManager.shared.loadCachedComments(for: postId)
+            }
         }
     }
     
@@ -172,8 +180,10 @@ final class PostViewModel: ObservableObject {
             if let index = comments.firstIndex(where: { $0.id == tempComment.id }) {
                 comments[index] = createdComment
             }
+            CoreDataManager.shared.saveComments(self.comments, for: postId)
         } catch {
             // Keep the optimistic comment if endpoint not yet ready
+            CoreDataManager.shared.saveComments(self.comments, for: postId)
         }
     }
 }

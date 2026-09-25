@@ -21,15 +21,20 @@ struct RootView: View {
             }
             .animation(.easeInOut(duration: 0.3), value: appState.isAuthenticated)
             
-            // Global Banner Overlay
-            if let banner = appState.banner {
-                ErrorBanner(banner: banner) {
-                    appState.dismissBanner()
+            // Offline and Global Banners
+            VStack(spacing: 6) {
+                OfflineBannerView()
+                
+                if let banner = appState.banner {
+                    ErrorBanner(banner: banner) {
+                        appState.dismissBanner()
+                    }
                 }
-                .padding(.top, 8)
-                .zIndex(999)
             }
+            .padding(.top, 8)
+            .zIndex(999)
         }
+        .preferredColorScheme(appState.preferredColorScheme)
     }
 }
 

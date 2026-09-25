@@ -57,6 +57,18 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
+    func startConversation(targetUserId: String) async -> Conversation? {
+        do {
+            let body = CreateConversationRequest(participantIds: [targetUserId], isGroup: false, groupName: nil)
+            let conversation: Conversation = try await APIClient.shared.request(.createConversation, body: body)
+            return conversation
+        } catch {
+            print("❌ [ProfileViewModel] Failed to start conversation: \(error)")
+            self.errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+    
     private func setupEditFields(from user: User) {
         self.editFullName = user.fullName
         self.editUsername = user.username

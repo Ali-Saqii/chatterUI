@@ -19,6 +19,15 @@ final class FeedViewModel: ObservableObject {
     private let limit = 20
     private var canLoadMore = true
     
+    init() {
+        // Preload cached posts from Core Data immediately so UI displays with 0ms delay
+        let cached = CoreDataManager.shared.loadCachedPosts()
+        if !cached.isEmpty {
+            self.posts = cached
+            print("📦 [FeedViewModel] Loaded \(cached.count) cached posts from Core Data")
+        }
+    }
+    
     func fetchFeed(isRefresh: Bool = false) async {
         print("🔄 [FeedViewModel] fetchFeed() called — isRefresh: \(isRefresh), currentPage: \(currentPage)")
         
@@ -60,11 +69,15 @@ final class FeedViewModel: ObservableObject {
             if isRefresh || currentPage == 1 {
                 self.posts = response.posts
                 print("🔁 [FeedViewModel] Posts replace (refresh/page 1) — naye posts: \(self.posts.count)")
+                // Save to Core Data cache
+                CoreDataManager.shared.savePosts(response.posts, clearExisting: isRefresh)
             } else {
                 let existingIds = Set(self.posts.map { $0.id })
                 let newPosts = response.posts.filter { !existingIds.contains($0.id) }
                 self.posts.append(contentsOf: newPosts)
                 print("➕ [FeedViewModel] Posts append — naye \(newPosts.count) posts, total: \(self.posts.count)")
+                // Cache appended posts
+                CoreDataManager.shared.savePosts(newPosts, clearExisting: false)
             }
             
             self.canLoadMore = response.pagination.page < response.pagination.totalPages
@@ -77,7 +90,21 @@ final class FeedViewModel: ObservableObject {
         } catch {
             print("❌ [FeedViewModel] fetchFeed ERROR: \(error)")
             print("❌ [FeedViewModel] Error description: \(error.localizedDescription)")
-            errorMessage = error.localizedDescription
+            
+            // Offline fallback: ensure cached posts are loaded if array was empty
+            if self.posts.isEmpty {
+                let cached = CoreDataManager.shared.loadCachedPosts()
+                if !cached.isEmpty {
+                    self.posts = cached
+                    print("📦 [FeedViewModel] Fallback loaded \(cached.count) cached posts")
+                }
+            }
+            
+            if !NetworkMonitor.shared.isConnected {
+                errorMessage = "Offline mode — displaying cached posts."
+            } else {
+                errorMessage = error.localizedDescription
+            }
         }
     }
     
@@ -106,6 +133,9 @@ final class FeedViewModel: ObservableObject {
             self.posts.append(contentsOf: newPosts)
             print("➕ [FeedViewModel] Load more: \(newPosts.count) naye posts, total: \(self.posts.count)")
             
+            // Persist newly loaded page to Core Data
+            CoreDataManager.shared.savePosts(newPosts, clearExisting: false)
+            
             self.canLoadMore = response.pagination.page < response.pagination.totalPages
             if canLoadMore {
                 currentPage += 1
@@ -122,6 +152,8 @@ final class FeedViewModel: ObservableObject {
             withAnimation {
                 posts.removeAll { $0.id == postId }
             }
+            // Remove from Core Data cache
+            CoreDataManager.shared.deleteCachedPost(postId: postId)
             print("✅ [FeedViewModel] Post delete ho gaya — remaining: \(posts.count)")
         } catch {
             print("❌ [FeedViewModel] deletePost ERROR: \(error.localizedDescription)")
@@ -132,11 +164,19 @@ final class FeedViewModel: ObservableObject {
     func toggleLike(for post: Post) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
         posts[index] = PostActionService.toggleLike(on: posts[index])
+        
+        // Persist like state update to Core Data
+        CoreDataManager.shared.updatePostLike(
+            postId: post.id,
+            isLikedByMe: posts[index].isLikedByMe,
+            likesCount: posts[index].likesCount
+        )
     }
     
     func updatePost(_ updatedPost: Post) {
         if let index = posts.firstIndex(where: { $0.id == updatedPost.id }) {
             posts[index] = updatedPost
+            CoreDataManager.shared.savePost(updatedPost)
         }
     }
 }

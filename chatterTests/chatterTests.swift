@@ -192,23 +192,27 @@ struct SettingsViewModelValidationTests {
 struct APIEndpointTests {
     
     @Test func endpointURLConstruction() {
-        let baseURL = "http://localhost:5000/api/"
+        let baseURL = "http://localhost:5001/api/"
         
-        let search = APIEndpoint.searchUsers(query: "swift", page: 2, limit: 15)
+        let search = APIEndpoint.searchPeople(query: "swift", page: 2, limit: 15)
         let searchURL = search.url(baseURL: baseURL)
-        #expect(searchURL?.absoluteString.contains("users?page=2&limit=15&search=swift") == true)
+        #expect(searchURL?.absoluteString.contains("friend/searchPeople?page=2&limit=15&q=swift") == true)
         
         let userProfile = APIEndpoint.getUserProfile(username: "john doe")
         let userURL = userProfile.url(baseURL: baseURL)
-        #expect(userURL?.absoluteString.contains("users/john%20doe") == true)
+        #expect(userURL?.absoluteString.contains("user/john%20doe") == true)
         
         let comments = APIEndpoint.getComments(postId: "p123")
-        #expect(comments.path == "posts/p123/comments")
+        #expect(comments.path == "comment/getComments/p123")
         #expect(comments.method == .get)
         
-        let toggleLike = APIEndpoint.toggleLike(postId: "p123")
-        #expect(toggleLike.path == "posts/p123/like")
-        #expect(toggleLike.method == .post)
+        let likePost = APIEndpoint.likePost(postId: "p123")
+        #expect(likePost.path == "comment/likePost/p123")
+        #expect(likePost.method == .post)
+        
+        let unlikePost = APIEndpoint.unlikePost(postId: "p123")
+        #expect(unlikePost.path == "comment/unlikePost/p123")
+        #expect(unlikePost.method == .post)
     }
 }
 
@@ -216,7 +220,7 @@ struct AppConfigTests {
     
     @Test func configBaseURLOverride() {
         let defaultURL = AppConfig.defaultBaseURL
-        #expect(defaultURL == "http://localhost:5000/api/")
+        #expect(defaultURL == "http://localhost:5001/api/")
         
         AppConfig.baseURL = "https://staging.chatter.com/api/"
         #expect(AppConfig.baseURL == "https://staging.chatter.com/api/")
@@ -226,3 +230,4 @@ struct AppConfigTests {
         #expect(AppConfig.baseURL == defaultURL)
     }
 }
+

@@ -56,6 +56,24 @@ enum APIEndpoint {
     case likePost(postId: String)
     case unlikePost(postId: String)
     
+    // Conversation — backend: /api/conversation/...
+    case getConversations(page: Int = 1, limit: Int = 20)
+    case createConversation
+    case leaveConversation(conversationId: String)
+    case removeParticipant(conversationId: String, userId: String)
+    
+    // Message — backend: /api/message/...
+    case sendMessage(conversationId: String)
+    case getMessages(conversationId: String, page: Int = 1, limit: Int = 20)
+    case markMessageRead(messageId: String)
+    case deleteMessage(messageId: String)
+    
+    // Notifications — backend: /api/notification/...
+    case getNotifications(page: Int = 1, limit: Int = 20)
+    case getUnreadNotificationCount
+    case markNotificationRead(notificationId: String)
+    case markAllNotificationsRead
+    
     var path: String {
         switch self {
         case .register:
@@ -133,6 +151,36 @@ enum APIEndpoint {
             return "comment/likePost/\(postId)"
         case .unlikePost(let postId):
             return "comment/unlikePost/\(postId)"
+
+        // Backend: /api/conversation/...
+        case .getConversations:
+            return "conversation"
+        case .createConversation:
+            return "conversation/create"
+        case .leaveConversation(let conversationId):
+            return "conversation/\(conversationId)/leave"
+        case .removeParticipant(let conversationId, let userId):
+            return "conversation/\(conversationId)/participants/\(userId)"
+
+        // Backend: /api/message/...
+        case .sendMessage(let conversationId):
+            return "message/conversation/\(conversationId)"
+        case .getMessages(let conversationId, _, _):
+            return "message/conversation/\(conversationId)"
+        case .markMessageRead(let messageId):
+            return "message/\(messageId)/read"
+        case .deleteMessage(let messageId):
+            return "message/\(messageId)"
+
+        // Backend: /api/notification/...
+        case .getNotifications:
+            return "notification"
+        case .getUnreadNotificationCount:
+            return "notification/unread-count"
+        case .markNotificationRead(let notificationId):
+            return "notification/\(notificationId)/read"
+        case .markAllNotificationsRead:
+            return "notification/read-all"
         }
     }
     
@@ -140,21 +188,26 @@ enum APIEndpoint {
         switch self {
         case .getMyProfile, .getUserProfile, .getAllUsers, .searchPeople, .searchUsers,
              .getFriends, .searchFriends, .getReceivedRequests, .getSentRequests, .searchFriendRequests,
-             .getFeed, .getUserPosts, .getMyPosts, .getComments:
+             .getFeed, .getUserPosts, .getMyPosts, .getComments,
+             .getConversations, .getMessages,
+             .getNotifications, .getUnreadNotificationCount:
             return .get
             
         case .register, .login, .forgotPassword,
              .sendFriendRequest, .acceptFriendRequest, .declineFriendRequest, .cancelFriendRequest,
-             .createPost, .addComment, .likePost, .unlikePost:
+             .createPost, .addComment, .likePost, .unlikePost,
+             .createConversation, .sendMessage:
             return .post
             
         case .updateProfile, .updatePassword:
             return .put
             
-        case .updateProfilePicture:
+        case .updateProfilePicture, .markMessageRead,
+             .markNotificationRead, .markAllNotificationsRead:
             return .patch
             
-        case .deleteAccount, .removeFriend, .deletePost, .deleteComment:
+        case .deleteAccount, .removeFriend, .deletePost, .deleteComment,
+             .leaveConversation, .removeParticipant, .deleteMessage:
             return .delete
         }
     }
@@ -170,7 +223,15 @@ enum APIEndpoint {
     
     var queryItems: [URLQueryItem]? {
         switch self {
-        case .getAllUsers(let page, let limit):
+        case .getAllUsers(let page, let limit),
+             .getConversations(let page, let limit),
+             .getNotifications(let page, let limit):
+            return [
+                URLQueryItem(name: "page", value: "\(page)"),
+                URLQueryItem(name: "limit", value: "\(limit)")
+            ]
+            
+        case .getMessages(_, let page, let limit):
             return [
                 URLQueryItem(name: "page", value: "\(page)"),
                 URLQueryItem(name: "limit", value: "\(limit)")

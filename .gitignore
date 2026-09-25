@@ -2,12 +2,13 @@
 .agents/
 .agent/
 
-# macOS
+# macOS & Editors
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon
 ._*
+*.code-workspace
 
 # Xcode
 build/

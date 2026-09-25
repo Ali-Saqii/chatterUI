@@ -159,9 +159,33 @@ struct PaginatedFriendsResponse: Codable, Sendable {
     let friends: [User]
     let pagination: PaginationInfo
     
+    enum CodingKeys: String, CodingKey {
+        case friends
+        case users
+        case pagination
+    }
+    
     init(friends: [User] = [], pagination: PaginationInfo = PaginationInfo()) {
         self.friends = friends
         self.pagination = pagination
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let list = try? container.decode([User].self, forKey: .friends) {
+            self.friends = list
+        } else if let userList = try? container.decode([User].self, forKey: .users) {
+            self.friends = userList
+        } else {
+            self.friends = []
+        }
+        self.pagination = (try? container.decode(PaginationInfo.self, forKey: .pagination)) ?? PaginationInfo()
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(friends, forKey: .friends)
+        try container.encode(pagination, forKey: .pagination)
     }
 }
 

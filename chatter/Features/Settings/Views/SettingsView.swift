@@ -41,6 +41,34 @@ struct SettingsView: View {
                     .padding(.top, 12)
                 }
                 
+                // Appearance Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "paintpalette.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.chatterPrimary)
+                        Text("Appearance")
+                            .font(.chatterCaptionBold)
+                            .foregroundColor(.chatterSubtext)
+                            .textCase(.uppercase)
+                    }
+                    .padding(.horizontal, 4)
+                    
+                    Picker("Appearance", selection: $appState.appearanceSelection) {
+                        Label("System", systemImage: "circle.righthalf.filled")
+                            .tag("system")
+                        Label("Light", systemImage: "sun.max.fill")
+                            .tag("light")
+                        Label("Dark", systemImage: "moon.fill")
+                            .tag("dark")
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(16)
+                .background(Color.chatterCardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 16)
+                
                 // Account Settings Section
                 VStack(spacing: 0) {
                     NavigationLink(destination: ChangePasswordView(viewModel: viewModel)) {

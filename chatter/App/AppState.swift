@@ -12,16 +12,39 @@ final class AppState: ObservableObject {
     @Published var currentUser: User? = nil
     @Published var isLoadingUser: Bool = false
     @Published var banner: BannerData? = nil
+    @Published var unreadNotificationCount: Int = 0
+    @AppStorage("appAppearanceSelection") var appearanceSelection: String = "system"
+    
+    var preferredColorScheme: ColorScheme? {
+        switch appearanceSelection {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            return nil
+        }
+    }
     
     private var cancellables = Set<AnyCancellable>()
     private var bannerDismissTask: Task<Void, Never>?
     
     init() {
-        // Check initial auth state
+        // Pre-load cached user from Core Data for instant offline profile display
+        if let cachedUser = CoreDataManager.shared.loadCachedCurrentUser() {
+            self.currentUser = cachedUser
+        }
+        
+        // Check initial auth state & connect socket if already authenticated
         if let token = KeychainManager.shared.getToken(), !token.isEmpty {
             self.isAuthenticated = true
             Task {
                 await fetchCurrentUser()
+            }
+            // Start socket connection with existing token
+            SocketService.shared.connect(token: token)
+            Task {
+                await fetchUnreadNotificationCount()
             }
         }
         
@@ -32,13 +55,40 @@ final class AppState: ObservableObject {
                 self?.handleSessionExpired()
             }
             .store(in: &cancellables)
+        
+        // Reconnect socket when app returns to foreground
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self = self, self.isAuthenticated else { return }
+                if !SocketService.shared.isConnected,
+                   let token = KeychainManager.shared.getToken() {
+                    SocketService.shared.connect(token: token)
+                }
+                Task { [weak self] in
+                    await self?.fetchUnreadNotificationCount()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Subscribe to socket events for real-time badge updates
+        subscribeToSocketEvents()
     }
     
     func setAuthenticated(token: String, user: User?) {
         _ = KeychainManager.shared.saveToken(token)
         self.currentUser = user
         self.isAuthenticated = true
+        if let user = user {
+            CoreDataManager.shared.saveCurrentUser(user)
+        }
         showBanner("Welcome back, @\(user?.username ?? "user")!", type: .success)
+        
+        // Connect socket with the new token
+        SocketService.shared.connect(token: token)
+        Task {
+            await fetchUnreadNotificationCount()
+        }
         
         if user == nil {
             Task {
@@ -55,27 +105,37 @@ final class AppState: ObservableObject {
         do {
             let user: User = try await APIClient.shared.request(.getMyProfile)
             self.currentUser = user
+            CoreDataManager.shared.saveCurrentUser(user)
         } catch {
             // 401 is handled by AuthInterceptor → NotificationCenter → handleSessionExpired()
-            // No duplicate handling needed here
+            // In offline mode, fallback to cached user
+            if currentUser == nil {
+                self.currentUser = CoreDataManager.shared.loadCachedCurrentUser()
+            }
         }
     }
     
     func updateCurrentUser(_ updatedUser: User) {
         self.currentUser = updatedUser
+        CoreDataManager.shared.saveCurrentUser(updatedUser)
     }
     
     func logout() {
+        SocketService.shared.disconnect()
         _ = KeychainManager.shared.deleteToken()
+        CoreDataManager.shared.clearAllCache()
         self.currentUser = nil
         self.isAuthenticated = false
+        self.unreadNotificationCount = 0
         showBanner("Logged out successfully.", type: .info)
     }
     
     private func handleSessionExpired() {
+        SocketService.shared.disconnect()
         _ = KeychainManager.shared.deleteToken()
         self.currentUser = nil
         self.isAuthenticated = false
+        self.unreadNotificationCount = 0
         showBanner("Session expired. Please log in again.", type: .error)
     }
     
@@ -100,5 +160,41 @@ final class AppState: ObservableObject {
         withAnimation(.easeOut(duration: 0.2)) {
             self.banner = nil
         }
+    }
+    
+    // MARK: - Notification Badge
+    
+    func fetchUnreadNotificationCount() async {
+        do {
+            let data: UnreadCountData = try await APIClient.shared.request(.getUnreadNotificationCount)
+            self.unreadNotificationCount = data.unreadCount
+        } catch {
+            // Silently fail — badge is non-critical
+        }
+    }
+    
+    private func subscribeToSocketEvents() {
+        SocketService.shared.events
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] event in
+                guard let self = self else { return }
+                switch event {
+                case .newNotification:
+                    self.unreadNotificationCount += 1
+                case .notificationRead:
+                    if self.unreadNotificationCount > 0 {
+                        self.unreadNotificationCount -= 1
+                    }
+                case .allNotificationsRead:
+                    self.unreadNotificationCount = 0
+                case .connected:
+                    Task { [weak self] in
+                        await self?.fetchUnreadNotificationCount()
+                    }
+                case .disconnected:
+                    break
+                }
+            }
+            .store(in: &cancellables)
     }
 }

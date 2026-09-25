@@ -11,6 +11,7 @@ struct ProfileView: View {
     @EnvironmentObject private var appState: AppState
     @State private var viewMode: Int = 0 // 0: Grid, 1: Feed
     @State private var selectedPostForDetail: Post? = nil
+    @State private var activeConversationToNavigate: Conversation? = nil
     
     init(username: String? = nil) {
         self.username = username
@@ -28,36 +29,20 @@ struct ProfileView: View {
                     skeletonHeader
                 } else if let user = viewModel.user {
                     // 1. Top Instagram Header: Avatar + Stats
-                    HStack(alignment: .center, spacing: 24) {
-                        // Story-Ring Avatar
-                        ZStack {
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(red: 0.98, green: 0.40, blue: 0.20),
-                                            Color(red: 0.88, green: 0.20, blue: 0.55),
-                                            Color(red: 0.58, green: 0.22, blue: 0.88)
-                                        ],
-                                        startPoint: .bottomLeading,
-                                        endPoint: .topTrailing
-                                    ),
-                                    lineWidth: 2.5
-                                )
-                                .frame(width: 86, height: 86)
-                            
-                            AvatarView(urlString: user.avatarURL, name: user.fullName, size: 76)
-                        }
+                    HStack(spacing: 24) {
+                        AvatarView(
+                            urlString: user.avatarURL,
+                            name: user.fullName,
+                            size: 80
+                        )
                         
-                        // Stats: Posts & Friends
                         HStack(spacing: 36) {
-                            statItem(count: user.postsCount, label: "posts")
+                            statItem(count: viewModel.posts.count, label: "posts")
                             statItem(count: user.friendsCount, label: "friends")
                         }
-                        .frame(maxWidth: .infinity)
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 4)
+                    .padding(.top, 16)
                     
                     // 2. Full Name & Bio (Instagram Style)
                     VStack(alignment: .leading, spacing: 3) {
@@ -83,6 +68,28 @@ struct ProfileView: View {
                     // 3. Instagram Action Buttons Row
                     HStack(spacing: 8) {
                         profileActionButton(for: user)
+                        
+                        if !isMyProfile {
+                            Button(action: {
+                                Task {
+                                    if let conversation = await viewModel.startConversation(targetUserId: user.id) {
+                                        activeConversationToNavigate = conversation
+                                    }
+                                }
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                                        .font(.system(size: 13, weight: .semibold))
+                                    Text("Message")
+                                        .font(.system(size: 13, weight: .semibold))
+                                }
+                                .foregroundColor(.chatterText)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 34)
+                                .background(Color.chatterInputBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
+                        }
                         
                         if isMyProfile {
                             ShareLink(item: "Check out @\(user.username) on Chatter! chatter://profile/\(user.username)") {
@@ -111,6 +118,7 @@ struct ProfileView: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    .padding(.top, 4)
                     
 //                    // 4. Story Highlights (Instagram Signature)
 //                    highlightsSection
@@ -216,6 +224,14 @@ struct ProfileView: View {
                     viewModel.updatePost(updated)
                     selectedPostForDetail = updated
                 }
+            }
+        }
+        .navigationDestination(isPresented: Binding(
+            get: { activeConversationToNavigate != nil },
+            set: { if !$0 { activeConversationToNavigate = nil } }
+        )) {
+            if let conversation = activeConversationToNavigate {
+                ChatDetailView(conversation: conversation)
             }
         }
         .refreshable {
