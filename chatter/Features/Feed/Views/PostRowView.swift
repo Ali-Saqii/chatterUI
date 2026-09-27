@@ -84,7 +84,7 @@ struct PostRowView: View {
             }
         }
         .background(Color.chatterCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 0, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.chatterBorder.opacity(0.35), lineWidth: 0.5)

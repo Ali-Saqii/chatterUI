@@ -74,9 +74,9 @@ struct FeedView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                }
+//                    .padding(.horizontal, 16)
+                    .padding(.vertical, 2)
+                }.scrollIndicators(.hidden)
                 .refreshable {
                     await viewModel.fetchFeed(isRefresh: true)
                 }
