@@ -9,8 +9,7 @@ enum TabSelection: Int, Hashable {
     case feed = 0
     case people = 1
     case chat = 2
-    case notifications = 3
-    case profile = 4
+    case profile = 3
 }
 
 struct MainTabView: View {
@@ -46,17 +45,7 @@ struct MainTabView: View {
             }
             .tag(TabSelection.chat)
             
-            // Tab 4: Activity (Notifications)
-            NavigationStack {
-                NotificationsView()
-            }
-            .tabItem {
-                Label("Activity", systemImage: "bell")
-            }
-            .tag(TabSelection.notifications)
-            .badge(appState.unreadNotificationCount)
-            
-            // Tab 5: Profile
+            // Tab 4: Profile
             NavigationStack {
                 ProfileView(username: nil)
             }

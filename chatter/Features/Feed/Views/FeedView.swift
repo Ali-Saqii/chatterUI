@@ -9,6 +9,7 @@ struct FeedView: View {
     @StateObject private var viewModel = FeedViewModel()
     @EnvironmentObject private var appState: AppState
     @State private var selectedPostForDetail: Post? = nil
+    @State private var navigateToNotifications: Bool = false
     
     var body: some View {
         ZStack {
@@ -96,13 +97,26 @@ struct FeedView: View {
             }.sharedBackgroundVisibility(.hidden)
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
-                  
+                    navigateToNotifications = true
                 }) {
-                    Image(systemName: "bell.circle.fill")
-                        .font(.system(size: 35))
-                        .foregroundStyle(Color.chatterGradient)
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "bell.circle.fill")
+                            .font(.system(size: 35))
+                            .foregroundStyle(Color.chatterGradient)
+                        
+                        if appState.unreadNotificationCount > 0 {
+                            Circle()
+                                .fill(Color.chatterDestructive)
+                                .frame(width: 10, height: 10)
+                                .overlay(Circle().stroke(Color.chatterCardBackground, lineWidth: 1.5))
+                                .offset(x: 2, y: -2)
+                        }
+                    }
                 }
             }.sharedBackgroundVisibility(.hidden)
+        }
+        .navigationDestination(isPresented: $navigateToNotifications) {
+            NotificationsView()
         }
         .sheet(isPresented: $viewModel.showCreatePostSheet) {
             NavigationStack {
