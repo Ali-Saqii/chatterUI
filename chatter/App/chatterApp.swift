@@ -8,6 +8,7 @@ import CoreData
 
 @main
 struct ChatterApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appState = AppState()
     @StateObject private var networkMonitor = NetworkMonitor.shared
     private let persistence = PersistenceController.shared

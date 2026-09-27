@@ -86,6 +86,7 @@ final class AppState: ObservableObject {
         
         // Connect socket with the new token
         SocketService.shared.connect(token: token)
+        NotificationManager.shared.requestAuthorization()
         Task {
             await fetchUnreadNotificationCount()
         }
@@ -179,8 +180,10 @@ final class AppState: ObservableObject {
             .sink { [weak self] event in
                 guard let self = self else { return }
                 switch event {
-                case .newNotification:
+                case .newNotification(let notification):
                     self.unreadNotificationCount += 1
+                    CoreDataManager.shared.saveNotification(notification)
+                    NotificationManager.shared.scheduleLocalNotification(from: notification)
                 case .notificationRead:
                     if self.unreadNotificationCount > 0 {
                         self.unreadNotificationCount -= 1

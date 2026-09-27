@@ -15,6 +15,7 @@ enum TabSelection: Int, Hashable {
 struct MainTabView: View {
     @State private var selectedTab: TabSelection = .feed
     @EnvironmentObject private var appState: AppState
+    @StateObject private var router = NotificationRouter.shared
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -55,6 +56,47 @@ struct MainTabView: View {
             .tag(TabSelection.profile)
         }
         .tint(Color.chatterPrimary)
+        .sheet(isPresented: Binding(
+            get: { router.targetPost != nil },
+            set: { if !$0 { router.targetPost = nil } }
+        )) {
+            if let post = router.targetPost {
+                NavigationStack {
+                    PostDetailView(post: post)
+                }
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { router.targetConversation != nil },
+            set: { if !$0 { router.targetConversation = nil } }
+        )) {
+            if let conv = router.targetConversation {
+                NavigationStack {
+                    ChatDetailView(conversation: conv)
+                }
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { router.targetProfileUsername != nil },
+            set: { if !$0 { router.targetProfileUsername = nil } }
+        )) {
+            if let username = router.targetProfileUsername {
+                NavigationStack {
+                    ProfileView(username: username)
+                }
+            }
+        }
+        .sheet(isPresented: $router.shouldOpenNotificationsList) {
+            NavigationStack {
+                NotificationsView()
+            }
+        }
+        .onChange(of: router.selectedTab) { _, newTab in
+            if let tab = newTab {
+                selectedTab = tab
+                router.selectedTab = nil
+            }
+        }
     }
 }
 
